@@ -7,8 +7,9 @@ from movement import GoForward
 from turtlebot_audio import TurtlebotAudio
 
 from sensor_msgs.msg import Image
+from std_msgs.msg import Empty
 
-import numpy
+import numpy as np
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -18,27 +19,33 @@ class TurtlebotTest( object ):
    def __init__( self ):
 
       self.bridge = CvBridge()
-
       #self.current_cv_depth_image = numpy.zeros( (1, 1, 3) )
       self.movement = GoForward()
       rospy.sleep(1)
-      vl = [0.1,0.2,0,0.1]
-      va = [0, 0, 0.8, 0.8]
-      t = [1,2,2,1]
-      self.movement.aplicar_velocidad(vl,va,t)
-      while math.degrees(self.movement.ang)< 90:
-          print(math.degrees(self.movement.ang))
-          self.movement.move(0,0.8)
+
+      #vl, va, t = self.movement.mover_robot_goal((0,3,0))
+      #self.movement.aplicar_velocidad([0.2], [0], [20])
+      #self.movement.linearecta(3)
+      # while math.degrees(self.movement.ang)< 90:
+      #     print(math.degrees(self.movement.ang))
+      #     self.movement.move(0,0.8)
       #self.speaker = TurtlebotAudio()
       #self.currAction = None
       #self.__depth_img = rospy.Subscriber( '/camera/depth/image', Image , self.__depth_handler )
 
    def __depth_handler( self, data ):
       try:
-         self.current_cv_depth_image = numpy.asarray( self.bridge.imgmsg_to_cv2( data, "32FC1" ) )
-         self.explore()
+         self.current_cv_depth_image = np.asarray( self.bridge.imgmsg_to_cv2( data, "32FC1" ) )
+         #self.explore()
       except CvBridgeError, e:
          rospy.logerr( e )
+
+   # def __rbg_handler(self, data):
+   #     try:
+   #         self.current_cv_rgb_image = np.asarray(self.bridge.imgmsg_to_cv2(data,"bgr8"))
+   #         self.follow()
+   #     except CvBridgeError, e:
+   #        rospy.logerr( e )
 
    def explore( self ):
       lineas = [self.current_cv_depth_image[x,0:540] for x in [10,250,470]]
