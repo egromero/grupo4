@@ -1,4 +1,4 @@
-
+import numpy as np
 
 FRAME_CENTER = 320
 WINDOWS_WIDTH = 30
