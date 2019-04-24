@@ -9,7 +9,7 @@ import numpy as np
 import time as tm
 import os
 from std_msgs.msg import Float64
-from Constans import * 
+from Constans import *
 
 
 
@@ -38,7 +38,7 @@ class Movement():
 		if self.write:
 			self.file = open(dir_path+filename,'w')
 			self.file.write('starting new something.\n')
-		
+
 		# What method to call when you ctrl + c
 		rospy.on_shutdown( self.shutdown )
 
@@ -48,7 +48,7 @@ class Movement():
 		self.cmd_vel = rospy.Publisher( '/cmd_vel_mux/input/navi', Twist, queue_size=10 )
 
 		#PID
-		
+
 		self.dist_set_point = rospy.Publisher( '/robot_dist/setpoint', Float64, queue_size = 1 )
 
 		while self.dist_set_point.get_num_connections() == 0 and not rospy.is_shutdown():
@@ -59,14 +59,14 @@ class Movement():
 			rospy.sleep( 0.2 )
 
 		self.actuation = rospy.Subscriber( '/robot_dist/control_effort', Float64, self.get_speed )
-		
+
 
 	def get_speed( self, data ):
 		self.speed = float( data.data )
 		rospy.loginfo( 'speed received: %f' % ( self.speed ))
 		#do something with speed
 
-	
+
 
 	def move(self,vel, ang):
 		self.move_cmd.linear.x = vel
@@ -76,41 +76,6 @@ class Movement():
 		self.cmd_vel.publish( self.move_cmd )
 		self.r.sleep()
 
-	def Position( self, odom_data ):
-		pose = odom_data.pose.pose #  the x,y,z pose and quaternion orientation
-
-		if self.ref:
-			print('got')
-			self.zero[0] = odom_data.pose.pose.position.x
-			self.zero[1] = odom_data.pose.pose.position.y
-			self.zero[2] = odom_data.pose.pose.position.z
-			angaux = odom_data.pose.pose.orientation.w
-			self.zero[3] = 2*math.acos( angaux ) if (odom_data.pose.pose.orientation.w < 0) else -2*math.acos( angaux )
-			self.ref = False
-			self.pos[0] = np.cos(self.zero[3])*(odom_data.pose.pose.position.x-self.zero[0]) + np.sin(self.zero[3])*(odom_data.pose.pose.position.y-self.zero[1])
-			self.pos[1] = np.cos(self.zero[3])*(odom_data.pose.pose.position.y-self.zero[1]) - np.sin(self.zero[3])*(odom_data.pose.pose.position.x-self.zero[0])
-			self.pos[2] = odom_data.pose.pose.position.z  - self.zero[2]
-			angaux = odom_data.pose.pose.orientation.w
-			angaux2 = -2*math.acos( angaux ) if (odom_data.pose.pose.orientation.z < 0) else 2*math.acos( angaux )
-
-		if angaux2-self.zero[3]>math.pi:
-
-			self.ang = (angaux2-self.zero[3])-2*math.pi
-
-		elif angaux2 - self.zero[3] < -math.pi:
-
-			self.ang = (angaux2-self.zero[3]) + 2*math.pi
-		else:
-			self.ang  = angaux2 - self.zero[3]
-
-		if self.flag == 2 and self.write:
-
-			self.file.write('X:{}, Y:{}, Z:{}, Angle:{}\n'.format(self.pos[0],self.pos[1],self.pos[2],self.ang))
-
-		if self.flag == 3 and self.write :
-			self.file.close()
-			self.flag = 4
-			print('Se cerro archivo')
 
 	def aplicar_velocidad(self, vel_lineal, vel_angular, time):
 		vel_lineal, vel_angular, time = iter(vel_lineal), iter(vel_angular), iter(time)
@@ -204,11 +169,3 @@ class Movement():
 		self.cmd_vel.publish( Twist() )
 		# sleep just makes sure TurtleBot receives the stop command prior to shutting down the script
 		rospy.sleep( 1 )
-
-
-
-
-
-
-
-
