@@ -125,8 +125,8 @@ class Movement():
 					#print(rospy.Time.now().to_sec())
 					if not self.obstacle:
 						self.move(current_action[0], current_action[1])
-							delta = rospy.Time.now().to_sec() - past_time
-								lapsed_time += delta
+						delta = rospy.Time.now().to_sec() - past_time
+						lapsed_time += delta
 					else:
 						self.move(0,0)
 						tm.sleep(0.2)
