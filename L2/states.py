@@ -10,6 +10,7 @@ from nav_msgs.msg import Odometry
 class States():
 
     def __init__(self):
+        self.state_dict = {'x':0,'y':0,'ang_pos':0}
         self.timer = Timer()
         ## 0 = xpos, 1 =  ypos, 2 = zpos, 3 = angular pos
         self.zero = [0 for i in range(4)]
@@ -23,13 +24,13 @@ class States():
 
         ## Subscribe to odometry
         rospy.Subscriber( 'odom', Odometry, self.Odom_read)
-        self.publisher = rospy.Publisher('states',State)
+        self.publisher = rospy.Publisher('our_state',State)
 
         rospy.on_shutdown( self.shutdown )
         self.r = rospy.Rate(30);
         while not rospy.is_shutdown:
-            new_item = State(self.pos[0],self.pos[1],self.pos[3],self.speed[0],self.speed[1],self.speed[3])
-            self.publisher.publish()
+            self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
+            self.publisher.publish(self.state_dict)
 
 
     ##Odometry message read
