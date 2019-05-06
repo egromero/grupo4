@@ -61,11 +61,11 @@ class Movement():
 		self.actuation = rospy.Subscriber( '/robot_dist/control_effort', Float64, self.get_speed )
 
 
-	def get_speed( self, data ):
+	`def get_speed( self, data ):
 		self.speed = float( data.data )
 		rospy.loginfo( 'speed received: %f' % ( self.speed ))
 		#do something with speed
-
+`
 
 
 	def move(self,vel, ang):
