@@ -1,6 +1,4 @@
-
-#! /usr/bin/env python
-
+#!/usr/bin/env python
 from util import pi_fix, Timer
 import numpy as np
 
@@ -10,7 +8,6 @@ from nav_msgs.msg import Odometry
 
 
 class States():
-
     def __init__(self):
         self.state_dict = {'x':0,'y':0,'ang_pos':0}
         self.timer = Timer()
