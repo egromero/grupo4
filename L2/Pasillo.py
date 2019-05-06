@@ -1,6 +1,7 @@
-import rospy
+import cv2
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
+import os
 from Constants import *
 
 class Pasillo():
@@ -33,7 +34,7 @@ class Pasillo():
                 error = np.mean((sub_imageL - sub_imageR).all())
                 value = 0.3 + 0.5*abs(error)
                 ang_speed = -value if error < 0 else value
-                self.mover.move(0,ang_speed)
+                self.mover.move(0.1, ang_speed)
 
 		except Exception as e:
 			print('error')
