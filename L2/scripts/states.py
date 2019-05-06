@@ -1,3 +1,6 @@
+
+#! /usr/bin/env python
+
 from util import pi_fix, Timer
 import numpy as np
 from classes import State
