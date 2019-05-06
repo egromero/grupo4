@@ -88,6 +88,8 @@ class States():
         self.pos[2] = new_z
         self.pos[3] = new_ang
 
+        print(self.pos)
+
 if __name__ ='__main__':
     rospy.init_node("state_node")
     handler = States()
