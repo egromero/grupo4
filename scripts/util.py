@@ -20,7 +20,7 @@ class Timer():
     def reset(self):
         self.ref = rospy.Time.now().to_msec()
 
-    def.time(self):
+    def time(self):
         return rospy.Time.now().to_msec() - ref
 
 # class Angle():

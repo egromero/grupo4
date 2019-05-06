@@ -3,7 +3,6 @@
 
 from util import pi_fix, Timer
 import numpy as np
-from classes import State
 
 
 import rospy
@@ -90,7 +89,7 @@ class States():
 
         print(self.pos)
 
-if __name__ ='__main__':
+if __name__ =='__main__':
     rospy.init_node("states")
     handler = States()
     rospy.spin()
