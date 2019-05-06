@@ -3,6 +3,7 @@ import math
 import roslib
 from Movement import Movement
 from ComputerVision import Vision
+from Pasillo import Pasillo
 from turtlebot_audio import TurtlebotAudio
 from sensor_msgs.msg import Image
 from std_msgs.msg import Empty
@@ -16,7 +17,8 @@ class Turtlebot(object):
 
 	def __init__( self ):
 		self.movement = Movement()
-		self.vision = Vision(self.movement)
+		# self.vision = Vision(self.movement)
+		self.pasillo = Pasillo(self.movement)
 		rospy.sleep(1)
 
 
