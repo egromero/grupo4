@@ -16,8 +16,8 @@ class Pasillo():
         try:
 			self.current_cv_depth_image = np.nan_to_num(np.asarray( self.bridge.imgmsg_to_cv2( data, "32FC1" )))
 
-            sub_imageL = self.current_cv_depth_image[LIMIT_X[0] : LIMIT_X[1], LIMIT_Y[0] : LIMIT_Y[0]+DELTA]
-            sub_imageR = self.current_cv_depth_image[LIMIT_X[0] : LIMIT_X[1], LIMIT_Y[1]-DELTA : LIMIT_Y[1]]
+            sub_imageL = self.current_cv_depth_image[LIMIT_X : LIMIT_X+DELTA, LIMIT_Y : LIMIT_Y+DELTA]
+            sub_imageR = self.current_cv_depth_image[LIMIT_X : LIMIT_X+DELTA, (640-LIMIT_Y)-DELTA : 640-LIMIT_Y]
             self.in_line = ( np.greater( sub_imageL-sub_imageR, - MARGEN ) * np.less( sub_imageL-sub_imageR, MARGEN ) ).all()
 
             sub_image = self.current_cv_depth_image[CENTER[0]-VISION_WINDOW[0] : CENTER[0]+VISION_WINDOW[0], CENTER[1]-VISION_WINDOW[1] :CENTER[1]+VISION_WINDOW[1]]
