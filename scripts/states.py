@@ -91,6 +91,6 @@ class States():
         print(self.pos)
 
 if __name__ ='__main__':
-    rospy.init_node("state_node")
+    rospy.init_node("states")
     handler = States()
     rospy.spin()

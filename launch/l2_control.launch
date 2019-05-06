@@ -12,8 +12,6 @@
     <param name="Kd" value="0.0" />
   </node>
 
-  <node pkg = "g4_l2" type = "states" name = "states">
-
-
-
+  <node pkg = "grupo4" type = "states" name = "states">
+  </node>
 </launch>
