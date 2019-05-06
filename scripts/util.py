@@ -15,13 +15,13 @@ def pi_fix(angle_in):
 
 class Timer():
     def __init__(self):
-        self.ref = rospy.Time.now().to_msec()
+        self.ref = rospy.Time.now().to_sec()
 
     def reset(self):
-        self.ref = rospy.Time.now().to_msec()
+        self.ref = rospy.Time.now().to_sec()
 
     def time(self):
-        return rospy.Time.now().to_msec() - ref
+        return rospy.Time.now().to_sec() - ref
 
 # class Angle():
 #     def __init__(self):
