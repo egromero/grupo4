@@ -1,0 +1,19 @@
+<launch>
+
+  <node name="lin_control" pkg="pid" type="controller" ns="lin_control">
+    <param name="Kp" value="0.5" />
+    <param name="Ki" value="0.0" />
+    <param name="Kd" value="0.0" />
+  </node>
+
+  <node name="ang_control" pkg="pid" type="controller" ns="ang_control">
+    <param name="Kp" value="0.5" />
+    <param name="Ki" value="0.0" />
+    <param name="Kd" value="0.0" />
+  </node>
+
+  <node pkg = "g4_l2" type = "states" name = "states">
+
+
+
+</launch>
