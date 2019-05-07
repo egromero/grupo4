@@ -1,24 +1,20 @@
 import rospy
-import math
-import roslib
-from Movement import Movement
-from ComputerVision import Vision
-from turtlebot_audio import TurtlebotAudio
-from sensor_msgs.msg import Image
-from std_msgs.msg import Empty
+
 import numpy as np
-import cv2
-from cv_bridge import CvBridge, CvBridgeError
+from control import Control
 
-
+route = [(0,1),(1,1),(1,0),(0,0)]
 
 class Turtlebot(object):
 
 	def __init__( self ):
-		self.movement = Movement()
-		self.vision = Vision(self.movement)
-		rospy.sleep(1)
-
+		## bad joke.
+		# self.control = None
+		self.control = Control()
+		for item in route:
+			self.control.new_target(item)
+			while not self.control.done:
+				rospy.sleep(0.05)
 
 
 

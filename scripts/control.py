@@ -42,10 +42,12 @@ class Generic_Controller():
 class Control():
     speed_dict = {'linear':0.3,'angular':0.7}
     accel_dict = {'linear':0.5,'angular':0.5}
+    stop_dict = {'linear':0.02,'angular':0.1}
     def __init__(self,type,ref):
 
         ##Lista de objetivos y estado. Ahora es solo un x,y
         self.target = [0,0]
+        self.done = False
 
         self.timer = Timer()
         ##odom subs
@@ -69,7 +71,7 @@ class Control():
         while True:
             self.ready = (lin_controller.ready and ang_controller.ready) and self.new_info
 
-            if self.ready:
+            if self.ready and  not self.done:
                 [lin_value,ang_value] = threshold(lin_controller.output,ang_controller.output)
 
                 if self.angular_only:
@@ -82,6 +84,14 @@ class Control():
 
                 self.ready = False
                 self.new_info = False
+
+
+    ## Should be changed into a node with with a sub-callback function. For now just create an object of this class in main and use this method
+    def new_target(item):
+        if len(item)!= 2:
+            raise IndexError('Length doesn\'t match')
+        self.new_target = item
+        self.done = False
 
     ## actuacion subcsriber
     def threshold(self,lin_speed,ang_speed):
@@ -130,7 +140,7 @@ class Control():
         target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2)
 
         ## desired angle - actual angle
-        target_ang = pi_fix(np.arctan2((self.target[1]-y)/(self.targer[0]-x)) - ang)
+        target_ang = pi_fix(np.arctan2((self.target[1]-y)/(self.target[0]-x)) - ang)
 
         ## angular movement only boolean
             self.angular_only = True if abs(target_ang)>0.17 else False
@@ -139,3 +149,7 @@ class Control():
         self.ang_controller.new_state(targen_ang)
         ## send flag saying we got new parameters
         self.new_info = True
+
+        ## stop mechanic
+        if abs(target_lin)<self.stop_dict['linear'] and abs(target_ang)<self.stop_dict['angular']:
+            self.done = True
