@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 from util import pi_fix, Timer
 import numpy as np
-
+import json
 
 import rospy
 from nav_msgs.msg import Odometry
+from std_msgs.msg import String
 
 
 class States():
@@ -23,13 +24,13 @@ class States():
 
         ## Subscribe to odometry
         rospy.Subscriber( 'odom', Odometry, self.Odom_read)
-        self.publisher = rospy.Publisher('our_state',State)
+        self.publisher = rospy.Publisher('our_state',String)
 
         rospy.on_shutdown( self.shutdown )
         self.r = rospy.Rate(30);
         while not rospy.is_shutdown:
             self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
-            self.publisher.publish(self.state_dict)
+            self.publisher.publish(json.dumps(self.state_dict))
 
 
     ##Odometry message read

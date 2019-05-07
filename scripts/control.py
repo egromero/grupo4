@@ -2,8 +2,9 @@
 
 import rospy
 import numpy as np
+import json
 from util import pi_fix,Timer
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64,String
 from geometry_msgs.msg import Twist
 
 
@@ -48,7 +49,7 @@ class Control():
 
         self.timer = Timer()
         ##odom subs
-        rospy.Subscriber('our_state',dict,self.get_state)
+        rospy.Subscriber('our_state',String,self.get_state)
         self.old_lin_val = 0
         self.old_ang_val = 0
 
@@ -117,6 +118,7 @@ class Control():
 
     ## odom subscriber callback
     def get_state(self, data ):
+        data = json.loads(data)
         x = data['x']
         y = data['y']
         ang = data['ang']
