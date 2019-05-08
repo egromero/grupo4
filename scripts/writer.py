@@ -2,29 +2,40 @@
 
 import rospy
 from std_msgs.msg import String
-file_counter = 'number.txt'
-file_start = 'measures'
+
 
 ## Publisher
 # self.write_pub = rosy.publisher('write_permit',String)
 
+global_dir = '/home/group4/catkin_ws/src/grupo4/scripts/'
+file_counter = global_dir + 'number.txt'
+file_start = global_dir +'Measures/measures'
+
 class Writer():
     def __init__(self):
+        self.file_number = 0
+	rospy.loginfo('Trrryyy222')
         try:
-            open(file_counter) as fl:
-                file_number = int(fl.readline().rstrip('\n'))
-            open(file_counter,'w') as fl:
-                fl.write(str(file_number+1))
-        except FileNotFoundError:
-            file_number = 0
-            open(file_counter,'w') as fl:
-                fl.write(str(file_number+1))
-        self.filename = file_start + '_' + filenumber + '.txt'
+            with open(file_counter) as fl:
+                medium = fl.readline().rstrip('\n')
+                print(medium)
+		self.file_number = int(medium)
+            with open(file_counter,'w') as fl:
+                fl.write(str(self.file_number+1))
+        except IOError:
+            self.file_number = 0
+            with open(file_counter,'w') as fl:
+                fl.write(str(self.file_number+1))
+        self.filename = file_start + '_' + str(self.file_number) + '.txt'
         ## create file
         with open(self.filename,'w') as fl:
             pass
-        rospy.subcsriber('write_permit',String,self.write_callback)
+        rospy.Subscriber('write_permit',String,self.write_callback)
 
     def write_callback(self,data):
         with open(self.filename,'a') as fl:
             fl.write(data)
+if __name__ =='__main__':
+    rospy.init_node("writer")
+    handler = Writer()
+    rospy.spin()
