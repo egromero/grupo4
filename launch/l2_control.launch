@@ -12,6 +12,6 @@
     <param name="Kd" value="0.0" />
   </node>
 
-  <node pkg = "grupo4" type = "states" name = "states">
+  <node pkg = "grupo4" type = "states.py" name = "states">
   </node>
 </launch>
