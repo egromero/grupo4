@@ -21,7 +21,7 @@ class Timer():
         self.ref = rospy.Time.now().to_sec()
 
     def time(self):
-        return rospy.Time.now().to_sec() - ref
+        return rospy.Time.now().to_sec() - self.ref
 
 # class Angle():
 #     def __init__(self):
