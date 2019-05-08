@@ -1,25 +1,37 @@
+#!/usr/bin/env python
 import rospy
+import json
+
 
 import numpy as np
-from control import Control
+from std_msgs.msg import String, Bool
 
-route = [(0,1),(1,1),(1,0),(0,0)]
+route = [[1,0],[0,0]]
 
 class Turtlebot(object):
-
 	def __init__( self ):
 		## bad joke.
-		# self.control = None
-		self.control = Control()
+		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
+		rospy.sleep( 0.2 )
+
+		rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
+		rospy.sleep( 0.2 )
+
+		self.flag = True
+		self.r = rospy.Rate(5)
 		for item in route:
-			self.control.new_target(item)
-			while not self.control.done:
-				rospy.sleep(0.05)
-
-
-
+			encoded = json.dumps(item)
+			self.target_publisher.publish(encoded)
+			print('Sent {}'.format(encoded))
+			self.flag = False
+			while not self.flag and not rospy.is_shutdown():
+				#print('Actual flag' ,self.flag)
+				self.r.sleep()
+	def target_reached_callback(self,data):
+		self.flag = data.data
+		#print('incoming flag :',data.data)
+		
 if __name__ == '__main__':
-
 	rospy.init_node( "turtlebot_g4" )
-	handler = TurtlebotTest()
+	handler = Turtlebot()
 	rospy.spin()

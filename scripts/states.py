@@ -11,7 +11,6 @@ from std_msgs.msg import String
 
 class States():
     def __init__(self):
-	rospy.loginfo('Trrryyy')
         #First oddometry read to get references
         self.ref = True
 	self.pos = [0 for i in range(4)]
@@ -27,13 +26,15 @@ class States():
         self.publisher = rospy.Publisher('our_state',String,queue_size =10)
 
 	#rospy.init_node('states',anonymous = True)
-        self.r = rospy.Rate(30);
-        while not rospy.is_shutdown:
+        self.r = rospy.Rate(2);
+        while not rospy.is_shutdown():
             self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
             self.publisher.publish(json.dumps(self.state_dict))
-
+	
             state_write = '{},{},{}'.format(self.pos[0],self.pos[1],self.pos[3])
             self.writer.publish(state_write)
+	    #print('Posiciones : ',state_write)
+	    self.r.sleep()
 
 
     ##Odometry message read
@@ -73,7 +74,7 @@ class States():
         self.pos[1] = new_y
         self.pos[2] = new_z
         self.pos[3] = new_ang
-        rospy.loginfo('{}'.format(self.pos))
+        
 if __name__ =='__main__':
     rospy.init_node("states")
     handler = States()

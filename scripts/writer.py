@@ -5,7 +5,7 @@ from std_msgs.msg import String
 
 
 ## Publisher
-# self.write_pub = rosy.publisher('write_permit',String)
+# self.write_pub = rospy.publisher('write_permit',String)
 
 global_dir = '/home/group4/catkin_ws/src/grupo4/scripts/'
 file_counter = global_dir + 'number.txt'
@@ -14,7 +14,7 @@ file_start = global_dir +'Measures/measures'
 class Writer():
     def __init__(self):
         self.file_number = 0
-	rospy.loginfo('Trrryyy222')
+	
         try:
             with open(file_counter) as fl:
                 medium = fl.readline().rstrip('\n')
@@ -34,7 +34,8 @@ class Writer():
 
     def write_callback(self,data):
         with open(self.filename,'a') as fl:
-            fl.write(data)
+            fl.write(data.data + '\n')
+
 if __name__ =='__main__':
     rospy.init_node("writer")
     handler = Writer()

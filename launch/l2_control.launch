@@ -1,13 +1,13 @@
 <launch>
 
   <node name="lin_control" pkg="pid" type="controller" ns="lin_control">
-    <param name="Kp" value="0.5" />
+    <param name="Kp" value="-0.25" />
     <param name="Ki" value="0.0" />
     <param name="Kd" value="0.0" />
   </node>
 
   <node name="ang_control" pkg="pid" type="controller" ns="ang_control">
-    <param name="Kp" value="0.5" />
+    <param name="Kp" value="0.2" />
     <param name="Ki" value="0.0" />
     <param name="Kd" value="0.0" />
   </node>
@@ -15,7 +15,9 @@
   <node pkg = "grupo4" type = "states.py" name = "states" output="screen">
   </node>
 
-  <node pkg = "grupo4" type = "writer.py" name = "writer">
+  <node pkg = "grupo4" type = "writer.py" name = "writer" output="screen">
   </node>	
 	
+  <node pkg = "grupo4" type = "control.py" name = "control" output="screen">
+  </node>
 </launch>
