@@ -26,7 +26,7 @@ class States():
         self.publisher = rospy.Publisher('our_state',String,queue_size =10)
 
 	#rospy.init_node('states',anonymous = True)
-        self.r = rospy.Rate(2);
+        self.r = rospy.Rate(60);
         while not rospy.is_shutdown():
             self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
             self.publisher.publish(json.dumps(self.state_dict))
@@ -47,7 +47,7 @@ class States():
             self.zero[1] = odom_data.pose.pose.position.y
             self.zero[2] = odom_data.pose.pose.position.z
             angaux = odom_data.pose.pose.orientation.w
-            self.zero[3] = 2*np.arccos( angaux ) if (odom_data.pose.pose.orientation.w < 0) else -2*np.arccos( angaux )
+            self.zero[3] = -2*np.arccos( angaux ) if (odom_data.pose.pose.orientation.z < 0) else 2*np.arccos( angaux )
             self.ref = False
             self.timer.reset()
         ##Calculate new values
@@ -55,7 +55,9 @@ class States():
         new_y = np.cos(self.zero[3])*(odom_data.pose.pose.position.y-self.zero[1]) - np.sin(self.zero[3])*(odom_data.pose.pose.position.x-self.zero[0])
         new_z = odom_data.pose.pose.position.z  - self.zero[2]
         angaux = odom_data.pose.pose.orientation.w
+	#print('angaux = {}'.format(angaux))
         angaux2 = -2*np.arccos( angaux ) if (odom_data.pose.pose.orientation.z < 0) else 2*np.arccos( angaux )
+	#print('angaux2 = {}'.format(angaux2))
         new_ang = pi_fix(angaux2-self.zero[3])
         ## Calculate speeds
         if self.timer.time()>10:

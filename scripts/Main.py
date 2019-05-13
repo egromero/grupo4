@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import rospy
 import json
-
-
 import numpy as np
+
+
 from std_msgs.msg import String, Bool
 
-route = [[1,0],[0,0]]
+route = [[2,0,None],[2,0,-np.pi/2],[3,0,None],[3,0,-np.pi/2],[3,-1,None],[3,-1,np.pi],[2,-1,None],[2,-1,np.pi/2]]
 
 class Turtlebot(object):
 	def __init__( self ):

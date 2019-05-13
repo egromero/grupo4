@@ -8,6 +8,7 @@ from std_msgs.msg import Float64, String , Bool
 from geometry_msgs.msg import Twist
 
 
+
 class Generic_Controller():
     def __init__(self,directory):
         ## Si se usa 'error' como objetivo, el target siempre sera 0. Por ende no es necesario cambiar nunca el settpoint
@@ -47,12 +48,13 @@ class Generic_Controller():
 class Control():
     speed_dict = {'linear':0.3,'angular':0.7}
     accel_dict = {'linear':0.5,'angular':0.5}
-    stop_dict = {'linear':0.02,'angular':0.1}
+    stop_dict = {'linear':0.04,'angular':0.1}
     def __init__(self):
 
         ##Lista de objetivos y estado. Ahora es solo un x,y
-        self.target = [0,0]
+        self.target = [0,0,None]
         self.done = False
+	self.counter = 0
 
         
         ##odom subs
@@ -91,15 +93,17 @@ class Control():
         ##Actuation
         while not rospy.is_shutdown():
             self.ready = (self.lin_controller.ready and self.ang_controller.ready) and self.new_info	
-            if self.ready and  not self.done:
+            if self.ready and not self.done:
                 [lin_value,ang_value] = self.threshold(self.lin_controller.output.data,self.ang_controller.output.data)
-		print('Values : ' , [lin_value,ang_value])
                 if self.angular_only:
-                    self.move_cmd.linear.x = 0
+		    #print(lin_value/((abs(0.17-abs(ang_value))/0.17+1)**3))
+                    self.move_cmd.linear.x = lin_value/((abs(0.17-abs(ang_value))/0.17+1)**3)
                     self.move_cmd.angular.z = ang_value
                 else:
                     self.move_cmd.linear.x = lin_value
                     self.move_cmd.angular.z = ang_value
+		#print(lin_value)
+		#print(ang_value)
                 self.mover.publish(self.move_cmd)
                 self.new_info = False
 	    self.r.sleep()
@@ -109,9 +113,10 @@ class Control():
     def new_target(self,data):
 	
         inc_list = json.loads(data.data)
-        if len(inc_list)!= 2:
+        if len(inc_list)!= 3:
             raise IndexError('Length doesn\'t match')
         self.target = inc_list
+	print(self.target)
         self.done = False
 
     ## actuacion subcsriber
@@ -151,19 +156,25 @@ class Control():
         x = inc_dict['x']
         y = inc_dict['y']
         ang = inc_dict['ang_pos']
-	print('x,y,ang = ' ,x,y,ang)
+	if self.counter%60 ==0:
+	  print("x = {}, y = {}, angle = {}".format(x,y,ang))
         ## Darle a los controladores el objetivo
         ## Objetivo = hacer alguna distancia 0.
         ## Recordatorio: Kp debe ser negativo
 
         ## euclidean distance
-        target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
+	if self.target[2]== None:
+            target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
 
-        ## desired angle - actual angle
-        target_ang = pi_fix(np.arctan2((self.target[1]-y),(self.target[0]-x)) - ang)
+        	## desired angle - actual angle
+            target_ang = pi_fix(np.arctan2((self.target[1]-y),(self.target[0]-x))-ang)
+		#np.arctan2((self.target[1]-y),(self.target[0]-x))
+	else:
+	    target_lin = 0
+	    target_ang = self.target[2]-ang
 
         ## angular movement only boolean
-        self.angular_only = True if abs(target_ang)>0.17 else False
+        self.angular_only = True if (abs(target_ang)>0.17 or self.target[2]!=None) else False
 
         self.lin_controller.new_state(target_lin)
         self.ang_controller.new_state(target_ang)
@@ -171,8 +182,13 @@ class Control():
         self.new_info = True
 
         ## stop mechanic
-        if abs(target_lin)<self.stop_dict['linear'] and abs(target_ang)<self.stop_dict['angular']:
-            self.target_reached_pub.publish(True)	
+	if self.counter%60==0:
+	    print('linear distance = {}. Angular distance = {}'.format(target_lin,target_ang))
+	    #print('linear value = {}. Angular value = {}'.format(self.old_lin_val,self.old_ang_val))
+        if (abs(target_lin)<self.stop_dict['linear'] and self.target[2]==None) or (self.target[2]!=None and abs(target_ang)<self.stop_dict['angular']):
+	    self.done = True
+            self.target_reached_pub.publish(True)
+	self.counter+=1	
 if __name__ == '__main__':
 	rospy.init_node( "controller" )
 	handler = Control()
