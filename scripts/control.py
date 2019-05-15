@@ -136,8 +136,8 @@ class Control():
 
     ## Should be changed into a node with with a sub-callback function. For now just create an object of this class in main and use this method
     def new_target(self,data):
-
         inc_list = json.loads(data.data)
+	print(inc_list)
         if len(inc_list)!= 3:
             raise IndexError('Length doesn\'t match')
         self.target = inc_list

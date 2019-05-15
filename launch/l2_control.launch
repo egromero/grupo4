@@ -23,4 +23,7 @@
   <node pkg = "grupo4" type = "writer.py" name = "writer" output="screen">
   </node>
 
+  <node pkg = "grupo4" type = "Obstaculos.py" name ="obstacles" output="screen">
+  </node>
+
 </launch>
