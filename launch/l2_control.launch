@@ -20,4 +20,7 @@
   <node pkg = "grupo4" type = "control.py" name = "control" output="screen">
   </node>
 
+  <node pkg = "grupo4" type = "writer.py" name = "writer" output="screen">
+  </node>
+
 </launch>

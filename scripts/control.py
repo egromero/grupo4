@@ -59,7 +59,7 @@ class Generic_Controller():
 
 class Control():
     speed_dict = {'linear':0.3,'angular':0.7}
-    accel_dict = {'linear':0.05,'angular':0.05}
+    accel_dict = {'linear':0.2,'angular':0.3}
     stop_dict = {'linear':0.04,'angular':0.1}
     def __init__(self):
 
