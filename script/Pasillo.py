@@ -12,7 +12,6 @@ class Pasillo():
     def __init__(self):
     	self.bridge = CvBridge()
     	self.current_cv_depth_image = np.zeros( (1, 1, 3) )
-    	self.current_cv_rgb_image = CURRENT_CV_RGB_IMAGE
         self.obstacle = OBSTACLE
 
         self.__depth_img = rospy.Subscriber( '/camera/depth/image', Image, self.recorrer )
@@ -59,7 +58,7 @@ class Pasillo():
                 error = ptoL - ptoR
                 value = 0.2 + 0.15 * abs(error)
                 ang_speed = -value if error < 0 else value
-        		print('corrigiendo',error, ang_speed)
+        		print('corrigiendo: ', error, ang_speed)
         		self.move_cmd.linear.x = 0.1
                 self.move_cmd.angular.z = ang_speed
 
