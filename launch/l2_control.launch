@@ -1,22 +1,23 @@
 <launch>
 
   <node name="lin_control" pkg="pid" type="controller" ns="lin_control">
-    <param name="Kp" value="-0.35" />
-    <param name="Ki" value="-0.08" />
-    <param name="Kd" value="0.0" />
-    <param name="windup_limit" value="0.15"/>
-  </node>
-
-  <node name="ang_control" pkg="pid" type="controller" ns="ang_control">
-    <param name="Kp" value="-1" />
-    <param name="Ki" value="-0.001" />
+    <param name="Kp" value="-0.5" />
+    <param name="Ki" value="-0.12" />
     <param name="Kd" value="0.0" />
     <param name="windup_limit" value="0.1"/>
   </node>
 
+  <node name="ang_control" pkg="pid" type="controller" ns="ang_control">
+    <param name="Kp" value="-1.5" />
+    <param name="Ki" value="-0.12" />
+    <param name="Kd" value="0.0" />
+    <param name="windup_limit" value="0.3"/>
+  </node>
+
   <node pkg = "grupo4" type = "states.py" name = "states" output="screen">
   </node>
-	
+
   <node pkg = "grupo4" type = "control.py" name = "control" output="screen">
   </node>
+
 </launch>

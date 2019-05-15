@@ -30,8 +30,8 @@ class States():
         while not rospy.is_shutdown():
             self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
             self.publisher.publish(json.dumps(self.state_dict))
-	
-            state_write = '{},{},{}'.format(self.pos[0],self.pos[1],self.pos[3])
+
+            state_write = '{},{},{},{}'.format(self.pos[0],self.pos[1],self.pos[3],self.timer.time())
             self.writer.publish(state_write)
 	    #print('Posiciones : ',state_write)
 	    self.r.sleep()
@@ -60,23 +60,23 @@ class States():
 	#print('angaux2 = {}'.format(angaux2))
         new_ang = pi_fix(angaux2-self.zero[3])
         ## Calculate speeds
-        if self.timer.time()>10:
-            x_speed = 1000*(new_x - self.pos[0])/self.timer.time()
-            y_speed = 1000*(new_y - self.pos[1])/self.timer.time()
-            z_speed = 1000*(new_z - self.pos[2])/self.timer.time()
-            ang_speed = 1000*(new_ang - self.pos[3])/self.timer.time()
-            self.timer.reset()
-            ##Actualize new speeds
-            self.speed[0] = x_speed
-            self.speed[1] = y_speed
-            self.speed[2] = z_speed
-            self.speed[3] = ang_speed
-        ##Actualize new values
+        # if self.timer.time()>10:
+        #     x_speed = 1000*(new_x - self.pos[0])/self.timer.time()
+        #     y_speed = 1000*(new_y - self.pos[1])/self.timer.time()
+        #     z_speed = 1000*(new_z - self.pos[2])/self.timer.time()
+        #     ang_speed = 1000*(new_ang - self.pos[3])/self.timer.time()
+        #     self.timer.reset()
+        #     ##Actualize new speeds
+        #     self.speed[0] = x_speed
+        #     self.speed[1] = y_speed
+        #     self.speed[2] = z_speed
+        #     self.speed[3] = ang_speed
+        # ##Actualize new values
         self.pos[0] = new_x
         self.pos[1] = new_y
         self.pos[2] = new_z
         self.pos[3] = new_ang
-        
+
 if __name__ =='__main__':
     rospy.init_node("states")
     handler = States()

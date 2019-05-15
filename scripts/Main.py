@@ -6,7 +6,7 @@ import numpy as np
 
 from std_msgs.msg import String, Bool
 
-route = [[2,0,None],[2,0,-np.pi/2],[3,0,None],[3,0,-np.pi/2],[3,-1,None],[3,-1,np.pi],[2,-1,None],[2,-1,np.pi/2]]
+route = [[1,0,None],[0,0,None],[0,0,0]]
 
 class Turtlebot(object):
 	def __init__( self ):
@@ -30,7 +30,7 @@ class Turtlebot(object):
 	def target_reached_callback(self,data):
 		self.flag = data.data
 		#print('incoming flag :',data.data)
-		
+
 if __name__ == '__main__':
 	rospy.init_node( "turtlebot_g4" )
 	handler = Turtlebot()

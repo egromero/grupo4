@@ -14,7 +14,7 @@ file_start = global_dir +'Measures/measures'
 class Writer():
     def __init__(self):
         self.file_number = 0
-	
+
         try:
             with open(file_counter) as fl:
                 medium = fl.readline().rstrip('\n')
@@ -28,13 +28,14 @@ class Writer():
                 fl.write(str(self.file_number+1))
         self.filename = file_start + '_' + str(self.file_number) + '.txt'
         ## create file
-        with open(self.filename,'w') as fl:
-            pass
+        self.file = open(self.filename,'w')
         rospy.Subscriber('write_permit',String,self.write_callback)
 
     def write_callback(self,data):
-        with open(self.filename,'a') as fl:
-            fl.write(data.data + '\n')
+        if data.data == 'END':
+            self.file.close()
+        else:
+            self.file.write(data.data + '\n')
 
 if __name__ =='__main__':
     rospy.init_node("writer")
