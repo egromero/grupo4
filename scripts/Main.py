@@ -15,6 +15,7 @@ class Turtlebot(object):
 		rospy.sleep( 0.2 )
 
 		rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
+		rospo.Subscriber('route_obstacle', String, self.new_route_recieved)
 		rospy.sleep( 0.2 )
 
 		self.flag = True
@@ -24,12 +25,29 @@ class Turtlebot(object):
 			self.target_publisher.publish(encoded)
 			print('Sent {}'.format(encoded))
 			self.flag = False
+
 			while not self.flag and not rospy.is_shutdown():
 				#print('Actual flag' ,self.flag)
+				if self.obstacle:
+					while len(self.new_route) >= 1:
+						instruction = self.new_route.pop(0)
+						encoded = json.dumps(instruction)
+						self.target_publisher.publish(encoded)
+						print('Sent {}'.format(encoded))
+						self.flag = False
+						while not self.flag and not rospy.is_shutdown():
+							self.r.sleep()
+					self.obstacle = False
 				self.r.sleep()
+
 	def target_reached_callback(self,data):
 		self.flag = data.data
 		#print('incoming flag :',data.data)
+	def new_route_reicieved(self, data):
+		if not self.obstacle:
+			self.new_route = json.loads(data.data)
+			self.obstacle = True
+
 		
 if __name__ == '__main__':
 	rospy.init_node( "turtlebot_g4" )
