@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python
+import numpy as np
 
 FRAME_CENTER = 320
 WINDOWS_WIDTH = 30
@@ -20,7 +21,7 @@ THRESHOLD= [0.1,0.5]
 LOWER_BLUE = np.array([100,100,70])
 UPPER_BLUE = np.array([120,140,170])
 THRESHOLD_COUNT = 100000
-LIMIT_X = 140
-LIMIT_Y = 20
+LIMIT_X = 75
+LIMIT_Y = 240
 DELTA = 10
-MARGEN = 10
+MARGEN = 1
