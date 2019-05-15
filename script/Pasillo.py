@@ -30,11 +30,7 @@ class Pasillo():
 
             ptoL = self.current_cv_depth_image[LIMIT_Y, LIMIT_X]
             ptoR = self.current_cv_depth_image[LIMIT_Y, 640-LIMIT_X]
-
-        	sub_imageL = self.current_cv_depth_image[LIMIT_Y : LIMIT_Y+DELTA, LIMIT_X : LIMIT_X+DELTA]
-            sub_imageR = self.current_cv_depth_image[LIMIT_Y : LIMIT_Y+DELTA, 640-LIMIT_X-DELTA : 640-LIMIT_X]
             self.in_line = np.greater( ptoL-ptoR, - MARGEN ) * np.less( ptoL-ptoR, MARGEN )
-        	# self.in_line = ( np.greater( sub_imageL-sub_imageR, - MARGEN ) * np.less( sub_imageL-sub_imageR, MARGEN ) ).all()
 
             sub_image = self.current_cv_depth_image[CENTER[0]-VISION_WINDOW[0] : CENTER[0]+VISION_WINDOW[0], CENTER[1]-VISION_WINDOW[1] :CENTER[1]+VISION_WINDOW[1]]
         	self.obstacle = ( np.greater( sub_image, 0.2 ) * np.less( sub_image, 0.6 ) ).any()
