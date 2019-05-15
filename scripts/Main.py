@@ -6,7 +6,7 @@ import numpy as np
 
 from std_msgs.msg import String, Bool
 
-route = [[1,0,None],[0,0,None],[0,0,0]]
+route = [[1,0,None],[0,0,None], [0,0,0]]
 
 class Turtlebot(object):
 	def __init__( self ):
