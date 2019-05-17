@@ -137,10 +137,10 @@ class Control():
     ## Should be changed into a node with with a sub-callback function. For now just create an object of this class in main and use this method
     def new_target(self,data):
         inc_list = json.loads(data.data)
-	print(inc_list)
         if len(inc_list)!= 3:
             raise IndexError('Length doesn\'t match')
         self.target = inc_list
+        print(self.target)
 	print(self.target)
         self.done = False
 
@@ -157,16 +157,16 @@ class Control():
 
         old_lin_val = self.old_lin_val
         old_ang_val = self.old_ang_val
-        print('1',lin_speed)
+        # print('1',lin_speed)
         ## Max velocity check
         lin_val = lin_speed if abs(lin_speed)<lin_splimit else lin_splimit*np.sign(lin_speed)
 
         ang_val = ang_speed if abs(ang_speed)<ang_splimit else ang_splimit*np.sign(ang_speed)
 
-        print('2',lin_val)
+        # print('2',lin_val)
         ## Max accel check
-        print('2.5',)
-        print('2.6',old_lin_val,lin_aclimit*time_delta)
+        # print('2.5',)
+        # print('2.6',old_lin_val,lin_aclimit*time_delta)
         lin_accel = abs(lin_val - old_lin_val)/time_delta
         ang_accel = abs(ang_val - old_ang_val)/time_delta
 
@@ -175,7 +175,7 @@ class Control():
         lin_val =  acc_limit_lin if ((lin_accel > lin_aclimit) and (abs(lin_val) > abs(acc_limit_lin)))  else lin_val
 
         ang_val =  acc_limit_ang if ((ang_accel > ang_aclimit) and (abs(ang_val) > abs(acc_limit_ang)))  else ang_val
-        print('3',lin_val,time_delta)
+        # print('3',lin_val,time_delta)
 
         return [lin_val,ang_val]
 
