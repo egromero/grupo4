@@ -9,8 +9,14 @@ class Sensor(object):
 	def __init__(self):
 
 		rospy.Subscriber('/scan', Image, self.scanner_data)
-
+		rospy.sleep(0.2)
+		self.r = rospy.Rate(10)
+		print("created sensor")
 	def scanner_data(self, data):
-		print(data.data)
+		print(data)
 
 
+if __name__ == "__main__":
+    rospy.init_node( "sensor" )
+    sensormodel = Sensor()
+    rospy.spin()
