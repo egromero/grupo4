@@ -12,7 +12,8 @@ class Sensor(object):
 		rospy.sleep(0.2)
 		self.r = rospy.Rate(10)
 		print("created sensor")
-	def scanner_data(self, data):
+	def scanner_data(self, laserScan):
+		data = laserScan.ranges		# Array de valores segun angulo de 90 a -90
 		print(data)
 
 
