@@ -20,6 +20,7 @@ class Sensor(object):
 	def scanner_data(self, laserScan):
 		data = laserScan.ranges		# Array de valores segun angulo de 90 a -90
 		while self.write < 10:
+			self.print(data)
 			self.write_pub.publish(str(data))
 			self.write += 1
 		self.write_pub.publish("END")
