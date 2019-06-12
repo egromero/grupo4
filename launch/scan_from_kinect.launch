@@ -1,4 +1,6 @@
 <launch>
+   <node pkg = "g43" type = "writer.py" name="writer" output="screen">
+   </node>	
    <node pkg = "g43" type = "sensor_model.py" name="sensormodel" output="screen">
    </node>
    <node pkg = "g43" type = "scan_from_kinect.py" name="scaner" output = "screen">

@@ -2,10 +2,10 @@
 import rospy
 import json
 import numpy as np
-from scipy import spatial
-from scipy.optimize import curve_fit
+#from scipy import spatial
+#from scipy.optimize import curve_fit
 from sensor_msgs.msg import Image
-from Constantes import K, z_max, z_hit, z_random, O_hit
+#from Constantes import K, z_max, z_hit, z_random, O_hit
 
 
 class Sensor(object):
@@ -25,7 +25,7 @@ class Sensor(object):
 		self.write_pub.publish("END")
 
 
-if _name_ == "_main_":
+if __name__ == "_main_":
     rospy.init_node( "sensor" )
     sensormodel = Sensor()
     rospy.spin()
