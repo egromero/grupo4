@@ -1,5 +1,5 @@
 image: map.pgm
-resolution: 0.1
+resolution: 0.1 # metros x pixel
 origin: [-0.9, -1.3, 0.0]
 negate: 0
 occupied_thresh: 0.65
