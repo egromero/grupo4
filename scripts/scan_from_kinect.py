@@ -23,7 +23,7 @@ class DeepScan(object):
 
     def __init__(self):
         rospy.init_node( 'DeepScan', anonymous=True )
-        
+        print('huehue')
         P = rospy.get_param('/navigation/projection_3D_to_kinect', "[[575.8157348632812, 0.0, 314.5, 0.0],[ 0.0, 575.8157348632812, 235.5, 0.0],[ 0.0, 0.0, 1.0, 0.0],[0.0,0.0,0.0,1.0]]")
         self.P = np.array(json.loads(P))
         self.PI = np.array(np.linalg.inv(np.matrix(self.P)))
