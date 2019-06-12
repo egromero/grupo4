@@ -5,7 +5,7 @@ from std_msgs.msg import String
 
 
 ## Publisher
-# self.write_pub = rospy.publisher('write_permit',String)
+self.write_pub = rospy.Publisher('write_permit',String)
 
 global_dir = '/home/group4/catkin_ws/src/grupo4/scripts/'
 file_counter = global_dir + 'number.txt'
