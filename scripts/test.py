@@ -1,4 +1,5 @@
 import cv2
+import math
 import numpy as np
 # import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -29,3 +30,16 @@ def map_matching():
         # Si son =s corr=1, si son opuestos corr=-1
         print("correlation matrix: %s"%(corr))
         print("----------------------------")
+
+z_max, res = 20, 0.1
+def dist_to_map():
+    dist = [20,  1.33, 0.2, 1.33, 20]
+    d = {-np.pi/2: 20, -0.0558: 0.0625, 0: 0.2, 0.0558: 0.0625, np.pi/2: 20}
+    map = [[0]*3]*3
+
+    for key in d.keys():
+        if d[key] < 20:
+            # pos = [dist*math.cos(ang), dist*math.sin(ang)]
+            a = d[key] * np.cos(key)
+            b = d[key] * np.sin(key)
+            print("{}: a: {}, b: {}".format(key, a, b))
