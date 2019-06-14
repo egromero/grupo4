@@ -34,12 +34,23 @@ def map_matching():
 z_max, res = 20, 0.1
 def dist_to_map():
     dist = [20,  1.33, 0.2, 1.33, 20]
-    d = {-np.pi/2: 20, -0.0558: 0.0625, 0: 0.2, 0.0558: 0.0625, np.pi/2: 20}
-    map = [[0]*3]*3
+    d = {-np.pi/2: 0.5, -np.pi/3: 0.5, -np.pi/4: 0.5, -np.pi/5: 0.5,
+         -np.pi/8: 0.5, 0: 0.5, np.pi/8: 0.5, np.pi/5: 0.5, np.pi/4: 0.5,
+         np.pi/3: 0.5, np.pi/2: 0.5}
+    map = [[0 for i in range(9)] for i in range(9)]
+    center = (4, 0)
+    map[-1][4] = 8
 
     for key in d.keys():
         if d[key] < 20:
-            # pos = [dist*math.cos(ang), dist*math.sin(ang)]
-            a = d[key] * np.cos(key)
-            b = d[key] * np.sin(key)
-            print("{}: a: {}, b: {}".format(key, a, b))
+            y_prim = int(d[key] * np.cos(key) / res)
+            x_prim = int(d[key] * np.sin(key) / res)
+            x = center[0] + x_prim
+            y = center[1] + y_prim
+            if x >= 0 and x < 9 and y >= 0 and y < 9:
+                map[-y][x] = 1
+                for i in range(y+1, 10):
+                    map[-i][x] = 0.5
+            # print("{}: x: {}, y: {}".format(key, x, y))
+
+    print(np.array(map))
