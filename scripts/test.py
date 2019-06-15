@@ -1,5 +1,6 @@
 import cv2
 import math
+from random import choice
 import numpy as np
 # import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -31,8 +32,8 @@ def map_matching():
         print("correlation matrix: %s"%(corr))
         print("----------------------------")
 
-z_max, res = 20, 0.1
 def dist_to_map():
+    z_max, res = 20, 0.1
     dist = [20,  1.33, 0.2, 1.33, 20]
     d = {-np.pi/2: 0.5, -np.pi/3: 0.5, -np.pi/4: 0.5, -np.pi/5: 0.5,
          -np.pi/8: 0.5, 0: 0.5, np.pi/8: 0.5, np.pi/5: 0.5, np.pi/4: 0.5,
@@ -52,5 +53,36 @@ def dist_to_map():
                 for i in range(y+1, 10):
                     map[-i][x] = 0.5
             # print("{}: x: {}, y: {}".format(key, x, y))
-
     print(np.array(map))
+
+def find_particles(p=None):
+    l = 9
+    if not p:
+        poses, p = [], []
+        for i in range(l):
+            poses += [(i, j) for j in range(l)]
+
+        poll = [choice(poses) for i in range(l**2)]
+        map = [[0 for i in range(l)] for i in range(l)]
+        for pose in poll:
+            x, y = pose
+            map[x][y] = 1
+            n = choice([0, 1, 2, 3])    # Alterar para probabilidad
+            p.append((x, y, n))
+        # print(np.array(map))
+        return p
+
+    else:
+        poses = []
+        for dato in p:
+            x, y, n = dato
+            poses += [(x, y) for i in range(n)]
+        poll = [choice(poses) for i in range(l**2)]
+        map = [[0 for i in range(l)] for i in range(l)]
+        for pose in poll:
+            x, y = pose
+            map[x][y] = 1
+            n = choice([0, 1, 2, 3])    # Alterar para probabilidad
+            p.append((x, y, n))
+        # print(np.array(map))
+        return p
