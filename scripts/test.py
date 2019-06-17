@@ -18,42 +18,22 @@ def ajuste_funcion():
     # covar: covarianza
     print("best values: (mean, std_dev) = %s"%(best_vals))
 
-def map_matching():
-    global_map = np.array( [ [1, 1, 1], [0, 0, 0], [0, 0, 0] ], dtype = np.uint8 )
-    local_map = np.array( [ [0, 0, 1], [0, 0, 1], [0, 0, 1]], dtype = np.uint8 )
+def map_matching(g_map=None, l_map=None):
+    p, local = [], []
+
+    for i in range(8):
+        for j in range(8):
+            local.append([fila[j:3+j] for fila in g_map[i:3+i]])
+
     for angle in [0, 90, 180, 270]:
-        rows, cols = local_map.shape
-        M = cv2.getRotationMatrix2D( ((cols-1)/2.0, (rows-1)/2.0), angle, 1 )
-        local_map_rtd = cv2.warpAffine(local_map, M, (cols, rows))
-        print(global_map)
-        print(local_map_rtd)
-        corr = cv2.matchTemplate(global_map, local_map_rtd, cv2.TM_CCOEFF_NORMED)
-        # Si son =s corr=1, si son opuestos corr=-1
-        print("correlation matrix: %s"%(corr[0][0]))
-        print("----------------------------")
+        rows, cols = l_map.shape
+        M = cv2.getRotationMatrix2D(((cols-1)/2.0, (rows-1)/2.0), angle, 1)
+        l_map_rtd = cv2.warpAffine(l_map, M, (cols, rows))
+        corr = cv2.matchTemplate(g_map, l_map_rtd, cv2.TM_CCOEFF_NORMED)
+        corr = corr[0][0] if corr[0][0] >= 0.0 else 0.0
+        p.append(corr)
 
-def dist_to_map():
-    z_max, res = 20, 0.1
-    dist = [20,  1.33, 0.2, 1.33, 20]
-    d = {-np.pi/2: 0.5, -np.pi/3: 0.5, -np.pi/4: 0.5, -np.pi/5: 0.5,
-         -np.pi/8: 0.5, 0: 0.5, np.pi/8: 0.5, np.pi/5: 0.5, np.pi/4: 0.5,
-         np.pi/3: 0.5, np.pi/2: 0.5}
-    map = [[0 for i in range(9)] for i in range(9)]
-    center = (4, 0)
-    map[-1][4] = 8
-
-    for key in d.keys():
-        if d[key] < 20:
-            y_prim = int(d[key] * np.cos(key) / res)
-            x_prim = int(d[key] * np.sin(key) / res)
-            x = center[0] + x_prim
-            y = center[1] + y_prim
-            if x >= 0 and x < 9 and y >= 0 and y < 9:
-                map[-y][x] = 1
-                for i in range(y+1, 10):
-                    map[-i][x] = 0.5
-            # print("{}: x: {}, y: {}".format(key, x, y))
-    print(np.array(map))
+    return p
 
 def easy_particles(p=None):
     l = 9
@@ -82,4 +62,20 @@ def easy_particles(p=None):
             map[x][y] = 1
         print(np.array(map))
 
-map_matching()
+# map_matching()
+g_map = np.array( [ [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                    [0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
+                    [0.5, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.5],
+                    [0.5, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.5],
+                    [0.5, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.5],
+                    [0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.5],
+                    [0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.5],
+                    [0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.5],
+                    [0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
+                    [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]], dtype = np.uint8 )
+
+l_map = np.array( [ [1.0, 1.0, 1.0],
+                    [1.0, 0.0, 1.0],
+                    [1.0, 0.0, 1.0]], dtype = np.uint8 )
+
+# print(map_matching(g_map, l_map))
