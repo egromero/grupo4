@@ -1,6 +1,6 @@
 import cv2
 import math
-from random import choice, random
+from random import choice, random, randint
 import numpy as np
 # import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -18,42 +18,38 @@ def ajuste_funcion():
     # covar: covarianza
     print("best values: (mean, std_dev) = %s"%(best_vals))
 
-def map_matching(g_map=None, l_map=None):
-    p, local = [], []
+def map_matching(pos=None, g_map=None, l_map=None):
+    x, y, angle = pos
+    local = np.array([np.ndarray.tolist(fila[y:3+y].astype(np.float32)) for fila in g_map[x-1:2+x]], dtype = np.uint8)
 
-    for i in range(8):
-        for j in range(8):
-            local.append([fila[j:3+j] for fila in g_map[i:3+i]])
+    rows, cols = l_map.shape
+    M = cv2.getRotationMatrix2D(((cols-1)/2.0, (rows-1)/2.0), angle, 1)
+    l_map_rtd = cv2.warpAffine(l_map, M, (cols, rows))
+    corr = cv2.matchTemplate(local, l_map_rtd, cv2.TM_CCOEFF_NORMED)
+    corr = corr[0][0] if corr[0][0] >= 0.0 else 0.0
 
-    for angle in [0, 90, 180, 270]:
-        rows, cols = l_map.shape
-        M = cv2.getRotationMatrix2D(((cols-1)/2.0, (rows-1)/2.0), angle, 1)
-        l_map_rtd = cv2.warpAffine(l_map, M, (cols, rows))
-        corr = cv2.matchTemplate(g_map, l_map_rtd, cv2.TM_CCOEFF_NORMED)
-        corr = corr[0][0] if corr[0][0] >= 0.0 else 0.0
-        p.append(corr)
+    print(local)
+    print(l_map_rtd)
 
-    return p
+    return corr
 
 def easy_particles(p=None):
-    l = 9
+    l = 10
     map = [[0 for i in range(l)] for i in range(l)]
     poses = []
     for i in range(l):
-        poses += [(i, j) for j in range(l)]
+        for j in range(l):
+            added = randint(0, 45)
+            poses += [(i, j, O + added) for O in range(0, 360, 45)]
 
     if not p:
-        # p = []
-        poll = np.random.choice(len(poses), 70, p=[0.012345679]*len(poses))
+        poll = np.random.choice(len(poses), 70, p=[1/len(poses)]*len(poses))
 
         for n in poll:
-            x, y = poses[n]
+            x, y, O = poses[n]
             map[x][y] = 1
-        #     n = random()    # Alterar para probabilidad
-        #     p.append(n)
-        # print(p)
-        print(np.array(map))
-        # return p
+        # print(np.array(map))
+        return poses, list(dict.fromkeys(poll))
 
     else:
         poll = np.random.choice(len(p), 70, p=p)
@@ -78,4 +74,6 @@ l_map = np.array( [ [1.0, 1.0, 1.0],
                     [1.0, 0.0, 1.0],
                     [1.0, 0.0, 1.0]], dtype = np.uint8 )
 
-# print(map_matching(g_map, l_map))
+# poses, p = easy_particles()
+pto = (6, 5, 54)
+print(map_matching(pto, g_map, l_map))
