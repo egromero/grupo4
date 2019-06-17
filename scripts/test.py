@@ -1,6 +1,6 @@
 import cv2
 import math
-from random import choice
+from random import choice, random
 import numpy as np
 # import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -23,13 +23,13 @@ def map_matching():
     local_map = np.array( [ [0, 0, 1], [0, 0, 1], [0, 0, 1]], dtype = np.uint8 )
     for angle in [0, 90, 180, 270]:
         rows, cols = local_map.shape
-        M = cv2.getRotationMatrix2D( (cols/2, rows/2), angle, 1 )
+        M = cv2.getRotationMatrix2D( ((cols-1)/2.0, (rows-1)/2.0), angle, 1 )
         local_map_rtd = cv2.warpAffine(local_map, M, (cols, rows))
         print(global_map)
         print(local_map_rtd)
         corr = cv2.matchTemplate(global_map, local_map_rtd, cv2.TM_CCOEFF_NORMED)
         # Si son =s corr=1, si son opuestos corr=-1
-        print("correlation matrix: %s"%(corr))
+        print("correlation matrix: %s"%(corr[0][0]))
         print("----------------------------")
 
 def dist_to_map():
@@ -55,34 +55,31 @@ def dist_to_map():
             # print("{}: x: {}, y: {}".format(key, x, y))
     print(np.array(map))
 
-def find_particles(p=None):
+def easy_particles(p=None):
     l = 9
-    if not p:
-        poses, p = [], []
-        for i in range(l):
-            poses += [(i, j) for j in range(l)]
+    map = [[0 for i in range(l)] for i in range(l)]
+    poses = []
+    for i in range(l):
+        poses += [(i, j) for j in range(l)]
 
-        poll = [choice(poses) for i in range(l**2)]
-        map = [[0 for i in range(l)] for i in range(l)]
-        for pose in poll:
-            x, y = pose
+    if not p:
+        # p = []
+        poll = np.random.choice(len(poses), 70, p=[0.012345679]*len(poses))
+
+        for n in poll:
+            x, y = poses[n]
             map[x][y] = 1
-            n = choice([0, 1, 2, 3])    # Alterar para probabilidad
-            p.append((x, y, n))
-        # print(np.array(map))
-        return p
+        #     n = random()    # Alterar para probabilidad
+        #     p.append(n)
+        # print(p)
+        print(np.array(map))
+        # return p
 
     else:
-        poses = []
-        for dato in p:
-            x, y, n = dato
-            poses += [(x, y) for i in range(n)]
-        poll = [choice(poses) for i in range(l**2)]
-        map = [[0 for i in range(l)] for i in range(l)]
-        for pose in poll:
-            x, y = pose
+        poll = np.random.choice(len(p), 70, p=p)
+        for n in poll:
+            x, y = poses[n]
             map[x][y] = 1
-            n = choice([0, 1, 2, 3])    # Alterar para probabilidad
-            p.append((x, y, n))
-        # print(np.array(map))
-        return p
+        print(np.array(map))
+
+map_matching()
