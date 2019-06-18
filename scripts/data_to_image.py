@@ -88,14 +88,25 @@ tic = time.time()
 cart_matrix = np.mgrid[-max:max+resolution:resolution,0:max+resolution:resolution].reshape(2,-1).T
 end_vector = [remap(radial_matrix,item) for item in cart_matrix]
 end_matrix = np.reshape(np.array(end_vector),[magic_number*2-1,magic_number])
+
+rows,cols = end_matrix.shape
+extra_matrix = np.ones([rows,cols-1])*0.5
+end_matrix = np.concatenate((extra_matrix,end_matrix),axis=1)
+
 toc = time.time()-tic
 print('Time for cartesian matrix generation: ',toc)
 
+## rotate matrix
+rows,cols = end_matrix.shape
+M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
+end_matrix = cv2.warpAffine(end_matrix,M,(cols,rows),borderValue=0.5)
 
 ## Reduce cartsian matrix
-original_center =  np.array([int(max/resolution) + 1,0])
+
 
 tic = time.time()
+
+original_center =  np.array([int(max/resolution) ,int(max/resolution) ])
 boolean_matrix1 = end_matrix!=0.5
 boolean_vector1 = [np.sum(item) for item in boolean_matrix1]
 boolean_index1 = np.nonzero(boolean_vector1);
@@ -106,17 +117,22 @@ boolean_vector2 = [np.sum(item) for item in boolean_matrix2]
 boolean_index2 = np.nonzero(boolean_vector2);
 zero_min2 = boolean_index2[0][0]; zero_max2 = boolean_index2[0][-1]
 
-new_center = original_center - np.array([zero_min1,0])
+new_center = original_center - np.array([zero_min1,zero_min2])
 new_matrix = end_matrix[zero_min1:zero_max1,zero_min2:zero_max2]
 toc = time.time()-tic
+print(new_matrix.shape)
+print(new_center)
 print('Time for reducing cartesian matrix: ',toc)
+
+# M = np.float32([[1,0,new_center[0]],[0,1,new_center[1]]])
+# dst = cv2.warpAffine(new_matrix,M,(cols,rows),borderValue=0.5)
 
 
 # rotated_matrix = rotate(new_matrix,30)
 
 plt.figure()
-plt.imshow(new_matrix)
+plt.imshow(end_matrix)
 
-# plt.figure()
-# plt.imshow(dst)
+plt.figure()
+plt.imshow(new_matrix)
 plt.show()
