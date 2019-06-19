@@ -18,8 +18,8 @@ ratio = original_res/resolution
 magic_number = int(max/resolution)
 offset = 90
 multiplier = 10
-gaussian_size = 5
-
+gaussian_size = 3
+gaussian_flag = True
 
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
 def remap(rmatrix,coords):
@@ -99,11 +99,13 @@ def image_preprocess():
     ## change into 0-1 values
     img = (img == 0)*1 + (img==205)*0.5
 
-    ## gaussian blur
-    img = cv2.GaussianBlur(img,(gaussian_size,gaussian_size),0)
+
     ## resize into correct resolution
     rows,cols = img.shape
     img = cv2.resize(img,(int(rows*ratio),int(cols*ratio)))
+    ## gaussian blur
+    if gaussian_flag:
+        img = cv2.GaussianBlur(img,(gaussian_size,gaussian_size),0)
 
     ## make a bigger image so the windows never go out of bounds
     rows,cols = img.shape
@@ -120,6 +122,9 @@ def rotate_and_center(inc_matrix,angle):
     rows,cols = inc_matrix.shape
     M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
     inc_matrix = cv2.warpAffine(inc_matrix,M,(cols,rows),borderValue=0.5)
+    ## gaussian blur
+    if gaussian_flag:
+        inc_matrix = cv2.GaussianBlur(inc_matrix,(gaussian_size,gaussian_size),0)
 
     ## Reduce cartsian matrix
 
@@ -128,6 +133,7 @@ def rotate_and_center(inc_matrix,angle):
     boolean_vector1 = [np.sum(item) for item in boolean_matrix1]
     boolean_index1 = np.nonzero(boolean_vector1);
     zero_min1 = boolean_index1[0][0]; zero_max1 = boolean_index1[0][-1]
+
 
     boolean_matrix2 = inc_matrix.transpose()!=0.5
     boolean_vector2 = [np.sum(item) for item in boolean_matrix2]
