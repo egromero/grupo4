@@ -21,7 +21,10 @@ def corr_norm(m1,m2):
     return num/den
 
 def ccoeff(m1,m2): ## Not quite
-    return np.sum(m1*m2)
+    rows,cols = m1.shape
+    m1_gamma = m1 - np.sum(m1)/(rows*cols)
+    m2_gamma = m2 - np.sum(m2)/(rows*cols)
+    return np.sum(m1_gamma*m2_gamma )
 
 def ccoeff_norm(m1,m2):
     num = ccoeff(m1,m2)
