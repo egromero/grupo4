@@ -1,16 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from random import uniform
 import time
 from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center
 from corr_functions import *
 
+before = "/Users/noemiisabocrosbyconget/Desktop/RoboticaMovil/grupo4/scripts/"
 path = 'Measures/'
 name = 'measures_3'
 sufix = '.txt'
 
 
-N=1000
-n_angles = 1
+N = 1000
+n_angles = 8
 angles = [360*i/n_angles for i in range(n_angles)]
 
 
@@ -21,7 +23,7 @@ def original_particle_gen(N,image):
     possible_locations = [(index//cols,index%cols) for index in binary_index]
 
 
-    origin_particles = [(possible_locations[np.random.choice(len(possible_locations))],np.random.choice(angles)) for i in range(N)]
+    origin_particles = [(possible_locations[np.random.choice(len(possible_locations))],np.random.choice(angles) + np.random.rand(1)*360/n_angles) for i in range(N)]
 
 
     return origin_particles
@@ -47,9 +49,23 @@ def get_weights(particles,cartesian_matrix,global_map):
         weights[i] = w
 
     return weights
+
+def weighted_choice(choices, weights):
+    total = sum(w for w in weights)
+    r = uniform(0, total)
+    upto = 0
+    for c in choices:
+        w = weights[choices.index(c)]
+        if upto + w >= r:
+             return c
+        upto += w
+
+def redistribute(poses, p):
+    return [weighted_choice(poses, p) for i in range(N)]
+
 ##open sample data
 data = [] # file reader, wont matter later
-with open (path+name+sufix) as file:
+with open(before+path+name+sufix) as file:
     for line in file:
         gen = map(float,line.rstrip(')\n').lstrip('(').split(','))
         data.append(list(gen))
@@ -74,13 +90,17 @@ origin_particles = original_particle_gen(N,global_map)
 ## paint particle in global image
 ## note: should make a copy of global map for this
 tic = time.time()
-weights = get_weights(origin_particles,cartesian_matrix,global_map)
+weights = get_weights(origin_particles, cartesian_matrix, global_map)
 toc = time.time()-tic
 print('Time for getting weight of all particles: ',toc)
 
-for particles in origin_particles:
-    global_map[particles[0][0],particles[0][1]] = 2
+tic = time.time()
+new_particles = redistribute(origin_particles, weights)
+toc = time.time()-tic
+print('Time for getting new distribution of all particles: ',toc)
 
+for particles in new_particles:
+    global_map[particles[0][0],particles[0][1]] = 2
 
 plt.imshow(global_map)
 plt.show()
