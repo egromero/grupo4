@@ -35,4 +35,5 @@ def ccoeff_norm(m1,m2):
 ## takes two matrices of same size and calculates a certain correlation. Can be changed via argument operation
 def matrix_corr(m1,m2,operation='corr_norm'):
     function_dict = {'corr':corr, 'corr_norm':corr_norm,'sq_diff':sq_diff,'sq_diff_norm':sq_diff_norm,'ccoeff_norm':ccoeff_norm,'ccoeff':ccoeff}
-    return function_dict[operation](m1,m2)
+    alpha =  function_dict[operation](m1,m2)
+    return 0 if np.isnan(alpha) else alpha

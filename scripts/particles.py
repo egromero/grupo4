@@ -5,9 +5,9 @@ import time
 from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center
 from corr_functions import *
 
-before = "/Users/noemiisabocrosbyconget/Desktop/RoboticaMovil/grupo4/scripts/"
+# before = "/Users/noemiisabocrosbyconget/Desktop/RoboticaMovil/grupo4/scripts/"
 path = 'Measures/'
-name = 'measures_3'
+name = 'measures_2'
 sufix = '.txt'
 
 
@@ -28,7 +28,7 @@ def original_particle_gen(N,image):
 
     return origin_particles
 
-def get_weights(particles,cartesian_matrix,global_map):
+def get_weights(particles,cartesian_matrix,global_map,operation):
     weights = np.zeros([len(particles)])
     for i,particle in enumerate(particles):
         coord,angle = particle
@@ -45,7 +45,7 @@ def get_weights(particles,cartesian_matrix,global_map):
         window = global_map[fake_center[0]:fake_center[0]+rows,fake_center[1]:fake_center[1]+cols]
 
         #w for weight
-        w = matrix_corr(window,new_matrix,operation='corr_norm')
+        w = matrix_corr(window,new_matrix,operation)
         weights[i] = w
 
     return weights
@@ -65,7 +65,7 @@ def redistribute(poses, p):
 
 ##open sample data
 data = [] # file reader, wont matter later
-with open(before+path+name+sufix) as file:
+with open(path+name+sufix) as file:
     for line in file:
         gen = map(float,line.rstrip(')\n').lstrip('(').split(','))
         data.append(list(gen))
@@ -81,26 +81,33 @@ print('Time for image preprocessing: ',toc)
 ##generate cartesian matrix
 tic = time.time()
 cartesian_matrix = generate_cartesian_matrix(sample)
+plt.figure()
+plt.imshow(cartesian_matrix)
+
 toc = time.time()-tic
 print('Time for cartesian full matrix generation: ',toc)
 
 ## Compute origin particles
-origin_particles = original_particle_gen(N,global_map)
+particles = original_particle_gen(N,global_map)
 
 ## paint particle in global image
 ## note: should make a copy of global map for this
-tic = time.time()
-weights = get_weights(origin_particles, cartesian_matrix, global_map)
-toc = time.time()-tic
-print('Time for getting weight of all particles: ',toc)
+plt.figure()
+for i in range(5):
+    tic = time.time()
+    weights = get_weights(particles, cartesian_matrix, global_map,'ccoeff_norm')
+    toc = time.time()-tic
+    print('Time for getting weight of all particles: ',toc)
 
-tic = time.time()
-new_particles = redistribute(origin_particles, weights)
-toc = time.time()-tic
-print('Time for getting new distribution of all particles: ',toc)
+    tic = time.time()
+    particles = redistribute(particles, weights)
+    toc = time.time()-tic
+    print('Time for getting new distribution of all particles: ',toc)
+    copy_n = np.copy(global_map)
+    for particle in particles:
+        copy_n[particle[0][0],particle[0][1]] = 2
 
-for particles in new_particles:
-    global_map[particles[0][0],particles[0][1]] = 2
-
-plt.imshow(global_map)
-plt.show()
+    plt.imshow(copy_n)
+    mng = plt.get_current_fig_manager()
+    mng.frame.Maximize(True)
+    plt.show()

@@ -12,13 +12,13 @@ angles = [0,180]
 window = 59 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
 max = 1 # max distance, set by sensor
-resolution = 0.005 # resolution of generated image, bigger = more time expensive
+resolution = 0.01 # resolution of generated image, bigger = more time expensive
 original_res = 0.1
 ratio = original_res/resolution
 magic_number = int(max/resolution)
 offset = 90
 multiplier = 10
-gaussian_size = 3
+gaussian_size = 5
 gaussian_flag = True
 
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
