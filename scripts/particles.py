@@ -11,8 +11,8 @@ name = 'measures_2'
 sufix = '.txt'
 
 
-N = 1000
-n_angles = 8
+N = 2000
+n_angles = 16
 angles = [360*i/n_angles for i in range(n_angles)]
 
 
@@ -23,12 +23,14 @@ def original_particle_gen(N,image):
     possible_locations = [(index//cols,index%cols) for index in binary_index]
 
 
-    origin_particles = [(possible_locations[np.random.choice(len(possible_locations))],np.random.choice(angles) + np.random.rand(1)*360/n_angles) for i in range(N)]
+    origin_particles = [(possible_locations[np.random.choice(len(possible_locations))],angle) for i in range(N) for angle in angles+np.random.rand(1)*360/n_angles]
 
 
     return origin_particles
 
 def get_weights(particles,cartesian_matrix,global_map,operation):
+    max = 0
+    index = 0
     weights = np.zeros([len(particles)])
     for i,particle in enumerate(particles):
         coord,angle = particle
@@ -45,9 +47,28 @@ def get_weights(particles,cartesian_matrix,global_map,operation):
         window = global_map[fake_center[0]:fake_center[0]+rows,fake_center[1]:fake_center[1]+cols]
 
         #w for weight
+        print(fake_center)
+        print(rows,cols)
+        print(window.shape)
         w = matrix_corr(window,new_matrix,operation)
         weights[i] = w
 
+        f,(ax1,ax2) = plt.subplots(1,2)
+        ax1.imshow(window)
+        ax2.imshow(new_matrix)
+        plt.show()
+
+        if w>max:
+            print(w,max)
+            max = w
+            favorite_image1 = window
+            favorite_image2 = new_matrix
+
+    print(max,np.sum(weights)/len(weights))
+    f,(ax1,ax2) = plt.subplots(1,2)
+    ax1.imshow(window)
+    ax2.imshow(new_matrix)
+    plt.show()
     return weights
 
 def weighted_choice(choices, weights):
@@ -61,7 +82,12 @@ def weighted_choice(choices, weights):
         upto += w
 
 def redistribute(poses, p):
-    return [weighted_choice(poses, p) for i in range(N)]
+    # print(type(poses))
+    pre =    np.random.choice(len(poses),len(poses),p=p)
+    # print(type(pre[0]))
+    return poses[pre]
+
+    # return [weighted_choice(poses, p) for i in range(N)]
 
 ##open sample data
 data = [] # file reader, wont matter later
@@ -81,21 +107,22 @@ print('Time for image preprocessing: ',toc)
 ##generate cartesian matrix
 tic = time.time()
 cartesian_matrix = generate_cartesian_matrix(sample)
-plt.figure()
-plt.imshow(cartesian_matrix)
+# plt.figure()
+# plt.imshow(cartesian_matrix)
 
 toc = time.time()-tic
 print('Time for cartesian full matrix generation: ',toc)
 
 ## Compute origin particles
-particles = original_particle_gen(N,global_map)
+particles = np.array(original_particle_gen(N,global_map))
+print(particles[0])
 
 ## paint particle in global image
 ## note: should make a copy of global map for this
-plt.figure()
 for i in range(5):
     tic = time.time()
     weights = get_weights(particles, cartesian_matrix, global_map,'ccoeff_norm')
+    weights = weights/np.sum(weights)
     toc = time.time()-tic
     print('Time for getting weight of all particles: ',toc)
 
@@ -107,7 +134,5 @@ for i in range(5):
     for particle in particles:
         copy_n[particle[0][0],particle[0][1]] = 2
 
-    plt.imshow(copy_n)
-    mng = plt.get_current_fig_manager()
-    mng.frame.Maximize(True)
-    plt.show()
+    # plt.imshow(copy_n)
+    # plt.show()

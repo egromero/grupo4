@@ -24,11 +24,14 @@ def ccoeff(m1,m2): ## Not quite
     rows,cols = m1.shape
     m1_gamma = m1 - np.sum(m1)/(rows*cols)
     m2_gamma = m2 - np.sum(m2)/(rows*cols)
-    return np.sum(m1_gamma*m2_gamma )
+    return max([np.sum(m1_gamma*m2_gamma),0])
 
 def ccoeff_norm(m1,m2):
-    num = ccoeff(m1,m2)
-    den = norm(m1,m2)
+    rows,cols = m1.shape
+    m1_gamma = m1 - np.sum(m1)/(rows*cols)
+    m2_gamma = m2 - np.sum(m2)/(rows*cols)
+    num = max([np.sum(m1_gamma*m2_gamma),0])
+    den = norm(m1_gamma,m2_gamma)
     return num/den
 
 

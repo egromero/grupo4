@@ -20,7 +20,7 @@ offset = 90
 multiplier = 10
 gaussian_size = 5
 gaussian_flag = True
-
+nothing_value = 0.1
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
 def remap(rmatrix,coords):
     #rmatrix n x m array
@@ -30,7 +30,7 @@ def remap(rmatrix,coords):
     y,x = coords
     radius = np.sqrt(x**2 + y**2)
     if radius>=max:
-        return 0.5
+        return nothing_value
     else:
         try:
             theta = (np.arctan2(y,x)+np.pi/2)*360/(2*np.pi)
@@ -51,13 +51,13 @@ def remap(rmatrix,coords):
                 #     print(m1,m2,mr)
                 #     print(output[0])
                 output = output[0]
-                if output>0.5:
+                if output>nothing_value :
                     output = output*multiplier ## augment with saturation
                     if output>1:
                         output = 1
                 return output
             else:
-                return 0.5
+                return nothing_value
         except ValueError:
             print(coords)
             print(r1,r2,t1,t2,q1,q2)
@@ -73,7 +73,9 @@ def generate_radial_matrix(data):
         rolled_vector = np.roll(binary_vector,1)
         rolled_vector[0]=False
 
-        radial_matrix[:,i] = np.transpose(binary_vector*1 - rolled_vector*0.5)
+        radial_matrix[:,i] = np.transpose(binary_vector*1 - rolled_vector*(1-nothing_value ))
+    # plt.imshow(radial_matrix)
+    # plt.show()
     return radial_matrix
 
 ## Generate cartesian matrix
@@ -86,7 +88,7 @@ def generate_cartesian_matrix(data):
     end_matrix = np.reshape(np.array(end_vector),[(magic_number+1)*2-1,magic_number+1])
 
     rows,cols = end_matrix.shape
-    extra_matrix = np.ones([rows,cols-1])*0.5
+    extra_matrix = np.ones([rows,cols-1])*nothing_value
     end_matrix = np.concatenate((extra_matrix,end_matrix),axis=1)
 
     return end_matrix
@@ -97,7 +99,7 @@ def image_preprocess():
     file = 'map.pgm'
     img = cv2.imread(file,0)
     ## change into 0-1 values
-    img = (img == 0)*1 + (img==205)*0.5
+    img = (img == 0)*1 + (img==205)*nothing_value
 
 
     ## resize into correct resolution
@@ -109,7 +111,7 @@ def image_preprocess():
 
     ## make a bigger image so the windows never go out of bounds
     rows,cols = img.shape
-    new_img = np.ones([rows+2*magic_number,cols+2*magic_number])*0.5
+    new_img = np.ones([rows+2*magic_number,cols+2*magic_number])*nothing_value
 
     rows,cols = new_img.shape
     new_img[magic_number:rows-magic_number,magic_number:cols-magic_number] = img
@@ -121,21 +123,28 @@ def rotate_and_center(inc_matrix,angle):
     global magic_number
     rows,cols = inc_matrix.shape
     M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
-    inc_matrix = cv2.warpAffine(inc_matrix,M,(cols,rows),borderValue=0.5)
+    inc_matrix = cv2.warpAffine(inc_matrix,M,(cols,rows),borderValue=nothing_value)
     ## gaussian blur
     if gaussian_flag:
         inc_matrix = cv2.GaussianBlur(inc_matrix,(gaussian_size,gaussian_size),0)
+    inc_matrix = np.round(inc_matrix,3)
 
     ## Reduce cartsian matrix
 
-    original_center =  np.array([magic_number ,magic_number ])
-    boolean_matrix1 = inc_matrix!=0.5
+    original_center =  np.array([magic_number ,magic_number])
+    boolean_matrix1 = (inc_matrix!=nothing_value)
+
+    print(type(inc_matrix[0][0]))
+    plt.imshow(inc_matrix)
+    plt.show()
+    plt.imshow(boolean_matrix1)
+    plt.show()
     boolean_vector1 = [np.sum(item) for item in boolean_matrix1]
     boolean_index1 = np.nonzero(boolean_vector1);
     zero_min1 = boolean_index1[0][0]; zero_max1 = boolean_index1[0][-1]
 
 
-    boolean_matrix2 = inc_matrix.transpose()!=0.5
+    boolean_matrix2 = inc_matrix.transpose()!=nothing_value
     boolean_vector2 = [np.sum(item) for item in boolean_matrix2]
     boolean_index2 = np.nonzero(boolean_vector2);
     zero_min2 = boolean_index2[0][0]; zero_max2 = boolean_index2[0][-1]
