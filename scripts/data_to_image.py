@@ -4,7 +4,7 @@ import time
 import cv2
 
 path = 'Measures/'
-name = 'measures_3'
+name = 'measures_0'
 sufix = '.txt'
 
 
@@ -12,7 +12,7 @@ angles = [0,180]
 window = 59 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
 max = 1 # max distance, set by sensor
-resolution = 0.01 # resolution of generated image, bigger = more time expensive
+resolution = 0.01 # resolution of generated image, lower value (more res) = more time expensive
 original_res = 0.1
 ratio = original_res/resolution
 magic_number = int(max/resolution)
@@ -21,7 +21,11 @@ multiplier = 10
 gaussian_size = 5
 gaussian_flag = True
 nothing_value = 0.1
+threshold = 0.001
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
+def pseudo_equal(m,value):
+    return np.greater(m,value-threshold)*np.less(m,value+threshold)
+
 def remap(rmatrix,coords):
     #rmatrix n x m array
     #coords is (y,x) coords of new array
@@ -121,34 +125,42 @@ def image_preprocess():
 ## rotates the cartesian matrix to a given angle, and proceeds to cut it to it's minimum size giving it's viewing center (from where the particle should see)
 def rotate_and_center(inc_matrix,angle):
     global magic_number
-    rows,cols = inc_matrix.shape
-    M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
-    inc_matrix = cv2.warpAffine(inc_matrix,M,(cols,rows),borderValue=nothing_value)
-    ## gaussian blur
-    if gaussian_flag:
-        inc_matrix = cv2.GaussianBlur(inc_matrix,(gaussian_size,gaussian_size),0)
-    inc_matrix = np.round(inc_matrix,3)
+
+
 
     ## Reduce cartsian matrix
-
+    rows,cols = inc_matrix.shape
+    M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
+    inc_matrix = cv2.warpAffine(inc_matrix,M,(cols,rows),borderValue=nothing_value,flags =cv2.INTER_NEAREST)
     original_center =  np.array([magic_number ,magic_number])
-    boolean_matrix1 = (inc_matrix!=nothing_value)
+    if gaussian_flag:
+        inc_matrix = cv2.GaussianBlur(inc_matrix,(gaussian_size,gaussian_size),0)
 
-    print(type(inc_matrix[0][0]))
-    plt.imshow(inc_matrix)
-    plt.show()
-    plt.imshow(boolean_matrix1)
-    plt.show()
-    boolean_vector1 = [np.sum(item) for item in boolean_matrix1]
-    boolean_index1 = np.nonzero(boolean_vector1);
-    zero_min1 = boolean_index1[0][0]; zero_max1 = boolean_index1[0][-1]
+    #
+    # plt.imshow(inc_matrix)
+    # plt.show()
 
+    ## compute the minimum sized image
+    boolean_matrix1 = 1-pseudo_equal(inc_matrix,nothing_value)
 
-    boolean_matrix2 = inc_matrix.transpose()!=nothing_value
-    boolean_vector2 = [np.sum(item) for item in boolean_matrix2]
+    boolean_vector1 = np.any(boolean_matrix1,axis=1)
+    boolean_index1 = np.nonzero(boolean_vector1)
+
+    boolean_vector2 = np.any(boolean_matrix1,axis=0)
     boolean_index2 = np.nonzero(boolean_vector2);
+
+    zero_min1 = boolean_index1[0][0]; zero_max1 = boolean_index1[0][-1]
     zero_min2 = boolean_index2[0][0]; zero_max2 = boolean_index2[0][-1]
 
     new_center = original_center - np.array([zero_min1,zero_min2])
-    new_matrix = inc_matrix[zero_min1:zero_max1,zero_min2:zero_max2]
-    return [new_matrix,new_center]
+
+    inc_matrix = inc_matrix[zero_min1:zero_max1,zero_min2:zero_max2]
+
+    # f,(ax1,ax2,ax3) = plt.subplots(1,3)
+    # ax1.imshow(boolean_matrix1)
+    # ax2.imshow(inc_matrix)
+    # ax3.imshow(inc_matrix)
+    # plt.show()
+    ## gaussian blur
+
+    return [inc_matrix,new_center]
