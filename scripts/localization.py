@@ -1,50 +1,58 @@
+#!/usr/bin/env python
 import rospy
 import json
 import numpy as np
+from std_msgs.msg import String, Bool
+from sensor_msgs.msg import LaserScan
 
-
-
-route = [(0,0,angle) for angle in np.arange(0,2*np.pi,np.pi/3)]
+route = [[0,0,item] for item in np.arange(0,2*np.pi,np.pi/3)]
 
 class Localizer():
     def __init__(self):
+	print('Initializing localizer')
         self.writer = rospy.Publisher('write_permit',String,queue_size =10)
         rospy.sleep(0.2)
 
         self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
-		rospy.sleep( 0.2 )
+	rospy.sleep( 0.2 )
 
-		rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
-		rospy.sleep( 0.2 )
+	self.new_data_flag = False
+	self.flag = True
 
-        self.scanner_data = 0
+	rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
+	rospy.sleep( 0.2 )
+
         rospy.Subscriber('/scan', LaserScan, self.scanner_data)
         rospy.sleep(0.2)
 
-		self.flag = True
-		self.r = rospy.Rate(5)
-		for item in route:
+	
+	print('Init complete')
+	self.r = rospy.Rate(5)
+	for item in route:
+	    print(item)
             self.new_data_flag = True
+	    print('a')
             while self.new_data_flag:
-                pass
-			encoded = json.dumps(item)
-			self.target_publisher.publish(encoded)
-			print('Sent {}'.format(encoded))
-			self.flag = False
-			while not self.flag and not rospy.is_shutdown():
-				#print('Actual flag' ,self.flag)
-				self.r.sleep()
-        self.write_pub.publish("END")
-	def target_reached_callback(self,data):
-		self.flag = data.data
+                rospy.sleep(0.01)
+	    encoded = json.dumps(item)
+	    self.target_publisher.publish(encoded)
+	    print('Sent {}'.format(encoded))
+	    self.flag = False
+	    while not self.flag and not rospy.is_shutdown():
+		#print('Actual flag' ,self.flag)
+		self.r.sleep()
+        self.writer.publish("END")
+	print('Done')
+    def target_reached_callback(self,data):
+	self.flag = data.data
 		#print('incoming flag :',data.data)
 
     #scanner callback
     def scanner_data(self, laserScan):
         # Array de valores segun angulo de 90 a -90
+        data = laserScan.ranges
         if self.new_data_flag:
-            data = laserScan.ranges
-            self.write_pub.publish(str(data))
+            self.writer.publish(str(data))
             self.new_data_flag = False
 
 
@@ -52,5 +60,5 @@ class Localizer():
 
 if __name__ == '__main__':
 	rospy.init_node( "turtlebot_g4" )
-	handler = Turtlebot()
+	handler = Localizer()
 	rospy.spin()

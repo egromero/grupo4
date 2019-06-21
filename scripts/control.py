@@ -126,7 +126,7 @@ class Control():
 		#print(ang_value)
                 self.old_lin_val = lin_value
                 self.old_ang_val = ang_value
-                self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
+                #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
                 self.mover.publish(self.move_cmd)
                 self.new_info = False
             else:

@@ -32,7 +32,7 @@ class States():
             self.publisher.publish(json.dumps(self.state_dict))
 
             state_write = '{},{},{},{}'.format(self.pos[0],self.pos[1],self.pos[3],self.timer.time())
-            self.writer.publish(state_write)
+            #self.writer.publish(state_write)
 	    #print('Posiciones : ',state_write)
 	    self.r.sleep()
 
