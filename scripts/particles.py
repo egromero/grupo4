@@ -5,6 +5,7 @@ import time
 from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center,nothing_value
 from corr_functions import *
 
+check_max = False
 
 
 def original_particles_gen(N,n_angles,image):
@@ -21,7 +22,6 @@ def original_particles_gen(N,n_angles,image):
     return np.array(origin_particles)
 
 def get_weights(particles,cartesian_matrix,global_map,operation='ccoeff_norm'):
-    check_max = True
     index = 0
     weights = np.zeros([len(particles)])
     if check_max:
