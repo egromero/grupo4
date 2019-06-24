@@ -11,7 +11,7 @@ class Localizer():
     def __init__(self):
     	print('Initializing localizer')
         self.writer = rospy.Publisher('write_permit',String,queue_size =10)
-            rospy.sleep(0.2)
+    	rospy.sleep(0.2)
 
         self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
     	rospy.sleep( 0.2 )
@@ -22,22 +22,20 @@ class Localizer():
     	rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
     	rospy.sleep( 0.2 )
 
-            rospy.Subscriber('/scan', LaserScan, self.scanner_data)
-            rospy.sleep(0.2)
+    	rospy.Subscriber('/scan', LaserScan, self.scanner_data)
+   	rospy.sleep(0.2)
 
 
     	print('Init complete')
     	self.r = rospy.Rate(5)
     	for item in route:
     	    print(item)
-
-
     	    encoded = json.dumps(item)
     	    self.target_publisher.publish(encoded)
     	    print('Sent {}'.format(encoded))
     	    self.flag = False
     	    while not self.flag and not rospy.is_shutdown():
-    		      self.r.sleep()
+	    	self.r.sleep()
             self.new_data_flag = True
             while self.new_data_flag:
                 rospy.sleep(0.01)
