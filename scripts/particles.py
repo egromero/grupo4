@@ -77,10 +77,8 @@ def redistribute(poses, p):
     # print(type(pre[0]))
     return poses[pre]
 
-    # return [weighted_choice(poses, p) for i in range(N)]
-
 def desplazar_particulas(particles, mu, sigma):
-    for particle in particles: # particle = [(x, y), angle]
+    for particle in particles:
         new_angle = np.random.normal(mu, sigma, 1)[0]
         r = np.random.normal(0, 0.1, 1)[0]
         x_var, y_var = int(r*np.cos(new_angle)), int(r*np.sin(new_angle))
