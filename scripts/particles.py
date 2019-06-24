@@ -83,28 +83,31 @@ def desplazar_particulas(particles, mu, sigma):
     for particle in particles: # particle = [(x, y), angle]
         new_angle = np.random.normal(mu, sigma, 1)[0]
         r = np.random.normal(0, 0.1, 1)[0]
-        x_var, y_var = r*np.cos(new_angle), r*np.sin(new_angle)
+        x_var, y_var = int(r*np.cos(new_angle)), int(r*np.sin(new_angle))
 
-        particle[0][0] += x_var
-        particle[0][1] += y_var
+        particle[0] = (particle[0][0] + x_var, particle[0][1] + y_var)
         particle[1] += new_angle
     return particles
 
-def get_position(sample, N):
-    # get local map
-    tic = time.time()
-    cartesian_matrix = generate_cartesian_matrix(sample)
-    toc = time.time()-tic
-    print('Time for cartesian full matrix generation: ', toc)
+def get_position(sample, N, first_data=None):
 
-    # get global map
-    tic = time.time()
-    global_map = image_preprocess()
-    toc = time.time()-tic
-    print('Time for image preprocessing: ', toc)
+    if not first_data:
+        # get local map
+        tic = time.time()
+        cartesian_matrix = generate_cartesian_matrix(sample)
+        toc = time.time()-tic
+        print('Time for cartesian full matrix generation: ', toc)
 
-    # get original particles
-    particles = np.array(original_particle_gen(N, global_map))
+        # get global map
+        tic = time.time()
+        global_map = image_preprocess()
+        toc = time.time()-tic
+        print('Time for image preprocessing: ', toc)
+
+        # get original particles
+        particles = np.array(original_particle_gen(N, global_map))
+    else:
+        particles, cartesian_matrix, global_map = first_data
 
     # get weights
     tic = time.time()
@@ -119,13 +122,30 @@ def get_position(sample, N):
     toc = time.time()-tic
     print('Time for getting new distribution of all particles: ', toc)
 
+    ## paint particle in global image
+    copy_n = np.copy(global_map)
+    for particle in particles:
+        copy_n[particle[0][0],particle[0][1]] = 2
+
+    f, axarr = plt.subplots(2,1)
+    axarr[0].imshow(copy_n)
+
     # move bot and particles
+    print(particles)
     particles = desplazar_particulas(particles, mu_ang, sigma_ang)
+    print(particles)
+
+    ## paint particle in global image
+    copy_n = np.copy(global_map)
+    for particle in particles:
+        copy_n[particle[0][0],particle[0][1]] = 2
+
+    axarr[1].imshow(copy_n)
+    plt.show()
 
     return
 
 
-"""
 ##open sample data
 data = [] # file reader, wont matter later
 with open(path+name+sufix) as file:
@@ -134,42 +154,16 @@ with open(path+name+sufix) as file:
         data.append(list(gen))
 sample = data[2]
 
-##preprocess image
-tic = time.time()
-global_map = image_preprocess()
-toc = time.time()-tic
-print('Time for image preprocessing: ',toc)
+get_position(sample, 1)
 
-
-##generate cartesian matrix
-tic = time.time()
-cartesian_matrix = generate_cartesian_matrix(sample)
+"""
 # plt.figure()
 # plt.imshow(cartesian_matrix)
 
-toc = time.time()-tic
-print('Time for cartesian full matrix generation: ',toc)
-
-## Compute origin particles
-particles = np.array(original_particle_gen(N,global_map))
-# print(particles[0])
-
 ## paint particle in global image
-for i in range(1):
-    tic = time.time()
-    weights = get_weights(particles, cartesian_matrix, global_map,'ccoeff_norm')
-    weights = weights/np.sum(weights)
-    toc = time.time()-tic
-    print('Time for getting weight of all particles: ',toc)
-
-    tic = time.time()
-    particles = redistribute(particles, weights)
-    toc = time.time()-tic
-    print('Time for getting new distribution of all particles: ',toc)
-
-    copy_n = np.copy(global_map) # make a copy of global map for this
-    for particle in particles:
-        copy_n[particle[0][0],particle[0][1]] = 2
+copy_n = np.copy(global_map)
+for particle in particles:
+    copy_n[particle[0][0],particle[0][1]] = 2
 
 plt.imshow(copy_n)
 plt.show()
