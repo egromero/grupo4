@@ -122,30 +122,13 @@ def get_position(sample, N, first_data=None):
     toc = time.time()-tic
     print('Time for getting new distribution of all particles: ', toc)
 
-    ## paint particle in global image
-    copy_n = np.copy(global_map)
-    for particle in particles:
-        copy_n[particle[0][0],particle[0][1]] = 2
-
-    f, axarr = plt.subplots(2,1)
-    axarr[0].imshow(copy_n)
-
     # move bot and particles
-    print(particles)
     particles = desplazar_particulas(particles, mu_ang, sigma_ang)
-    print(particles)
-
-    ## paint particle in global image
-    copy_n = np.copy(global_map)
-    for particle in particles:
-        copy_n[particle[0][0],particle[0][1]] = 2
-
-    axarr[1].imshow(copy_n)
-    plt.show()
 
     return
 
 
+"""
 ##open sample data
 data = [] # file reader, wont matter later
 with open(path+name+sufix) as file:
@@ -156,7 +139,6 @@ sample = data[2]
 
 get_position(sample, 1)
 
-"""
 # plt.figure()
 # plt.imshow(cartesian_matrix)
 
@@ -166,5 +148,10 @@ for particle in particles:
     copy_n[particle[0][0],particle[0][1]] = 2
 
 plt.imshow(copy_n)
+plt.show()
+
+f, axarr = plt.subplots(2,1)
+axarr[0].imshow(copy_n)
+axarr[1].imshow(copy_n)
 plt.show()
 """
