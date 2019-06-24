@@ -5,18 +5,10 @@ import time
 from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center,nothing_value
 from corr_functions import *
 
-path = 'Measures/'
-name = 'measures_3'
-sufix = '.txt'
 
 
-N = 800
-n_angles = 12
-angles = [360*i/n_angles for i in range(n_angles)]
-mu_ang, sigma_ang = 360*2/n_angles, 0.1
-
-
-def original_particle_gen(N,image):
+def original_particles_gen(N,n_angles,image):
+    angles = [360*i/n_angles for i in range(n_angles)]
     rows,cols = image.shape
     image_vector = image.reshape(1,rows*cols)
     binary_index = np.where(image_vector<nothing_value)[1]
@@ -26,12 +18,14 @@ def original_particle_gen(N,image):
     origin_particles = [(possible_locations[np.random.choice(len(possible_locations))],angle) for i in range(N) for angle in angles+np.random.rand(1)*360/n_angles]
 
 
-    return origin_particles
+    return np.array(origin_particles)
 
-def get_weights(particles,cartesian_matrix,global_map,operation):
+def get_weights(particles,cartesian_matrix,global_map,operation='ccoeff_norm'):
+    check_max = True
     index = 0
     weights = np.zeros([len(particles)])
-    # max = 0
+    if check_max:
+        max = 0
     for i,particle in enumerate(particles):
         coord,angle = particle
         y,x = coord
@@ -49,16 +43,20 @@ def get_weights(particles,cartesian_matrix,global_map,operation):
         w = matrix_corr(window,new_matrix,operation)
         weights[i] = w
 
+
         ## check favorite to see if correlation is working
-        # if w>max:
-        #     max = w
-        #     favorite_window = window
-        #     favorite_image = new_matrix
+        if check_max:
+            if w>max:
+                max = w
+                favorite_window = window
+                favorite_image = new_matrix
+    weights = weights/np.sum(weights)
     ##Favorite plot
-    # f,(ax1,ax2) = plt.subplots(1,2)
-    # ax1.imshow(favorite_window)
-    # ax2.imshow(favorite_image)
-    # plt.show()
+    if check_max:
+        f,(ax1,ax2) = plt.subplots(1,2)
+        ax1.imshow(favorite_window)
+        ax2.imshow(favorite_image)
+        plt.show()
     return weights
 
 def weighted_choice(choices, weights):
@@ -74,6 +72,11 @@ def weighted_choice(choices, weights):
 def redistribute(poses, p):
     # print(type(poses))
     pre = np.random.choice(len(poses),len(poses),p=p)
+    type_list = np.array([type(item) for item in pre])
+    for i,item in enumerate(type_list):
+        if item!= np.int64:
+            print(item)
+    # print(np.where(type_list!=np.int64))
     # print(type(pre[0]))
     return poses[pre]
 

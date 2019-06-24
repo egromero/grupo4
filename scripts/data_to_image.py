@@ -9,10 +9,10 @@ sufix = '.txt'
 
 
 angles = [0,180]
-window = 59 # add and substract to limits of angles.
+window = 60 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
-max = 1 # max distance, set by sensor
-resolution = 0.01 # resolution of generated image, lower value (more res) = more time expensive
+max = 2 # max distance, set by sensor
+resolution = 0.02 # resolution of generated image, lower value (more res) = more time expensive
 original_res = 0.1
 ratio = original_res/resolution
 magic_number = int(max/resolution)
@@ -20,8 +20,10 @@ offset = 90
 multiplier = 10
 gaussian_size = 5
 gaussian_flag = True
-nothing_value = 0.1
+nothing_value = 0.05
 threshold = 0.001
+
+rolled = 5
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
 def pseudo_equal(m,value):
     return np.greater(m,value-threshold)*np.less(m,value+threshold)
@@ -55,7 +57,7 @@ def remap(rmatrix,coords):
                 #     print(m1,m2,mr)
                 #     print(output[0])
                 output = output[0]
-                if output>nothing_value :
+                if output>nothing_value+threshold:
                     output = output*multiplier ## augment with saturation
                     if output>1:
                         output = 1
@@ -74,8 +76,8 @@ def generate_radial_matrix(data):
 
     for i in range(angles[1]-angles[0]+1):
         binary_vector = radial_vector>data[i]
-        rolled_vector = np.roll(binary_vector,1)
-        rolled_vector[0]=False
+        rolled_vector = np.roll(binary_vector,3)
+        rolled_vector[0:rolled]=False
 
         radial_matrix[:,i] = np.transpose(binary_vector*1 - rolled_vector*(1-nothing_value ))
     # plt.imshow(radial_matrix)
