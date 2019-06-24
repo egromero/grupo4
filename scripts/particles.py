@@ -5,7 +5,6 @@ import time
 from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center,nothing_value
 from corr_functions import *
 
-# before = "/Users/noemiisabocrosbyconget/Desktop/RoboticaMovil/grupo4/scripts/"
 path = 'Measures/'
 name = 'measures_3'
 sufix = '.txt'
@@ -14,6 +13,7 @@ sufix = '.txt'
 N = 800
 n_angles = 12
 angles = [360*i/n_angles for i in range(n_angles)]
+new_angle = 360*2/n_angles
 
 
 def original_particle_gen(N,image):
@@ -79,6 +79,42 @@ def redistribute(poses, p):
 
     # return [weighted_choice(poses, p) for i in range(N)]
 
+def get_position(sample, N):
+    # get local map
+    tic = time.time()
+    cartesian_matrix = generate_cartesian_matrix(sample)
+    toc = time.time()-tic
+    print('Time for cartesian full matrix generation: ', toc)
+
+    # get global map
+    tic = time.time()
+    global_map = image_preprocess()
+    toc = time.time()-tic
+    print('Time for image preprocessing: ', toc)
+
+    # get original particles
+    particles = np.array(original_particle_gen(N, global_map))
+
+    # get weights
+    tic = time.time()
+    weights = get_weights(particles, cartesian_matrix, global_map, 'ccoeff_norm')
+    weights = weights/np.sum(weights)
+    toc = time.time()-tic
+    print('Time for getting weight of all particles: ', toc)
+
+    # redistribute particles
+    tic = time.time()
+    particles = redistribute(particles, weights)
+    toc = time.time()-tic
+    print('Time for getting new distribution of all particles: ', toc)
+
+    # move bot and particles
+    mu, sigma = new_angle, 0.1
+    for particle in particles:
+        particle[1] += np.random.normal(mu, sigma) # gauss segun angulo
+
+    return
+
 ##open sample data
 data = [] # file reader, wont matter later
 with open(path+name+sufix) as file:
@@ -108,8 +144,7 @@ particles = np.array(original_particle_gen(N,global_map))
 # print(particles[0])
 
 ## paint particle in global image
-## note: should make a copy of global map for this
-for i in range(10):
+for i in range(1):
     tic = time.time()
     weights = get_weights(particles, cartesian_matrix, global_map,'ccoeff_norm')
     weights = weights/np.sum(weights)
@@ -120,7 +155,8 @@ for i in range(10):
     particles = redistribute(particles, weights)
     toc = time.time()-tic
     print('Time for getting new distribution of all particles: ',toc)
-    copy_n = np.copy(global_map)
+
+    copy_n = np.copy(global_map) # make a copy of global map for this
     for particle in particles:
         copy_n[particle[0][0],particle[0][1]] = 2
 
