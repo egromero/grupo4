@@ -13,6 +13,7 @@ sufix = '.txt'
 N = 800
 n_angles = 12
 angles = [360*i/n_angles for i in range(n_angles)]
+mu_ang, sigma_ang = 360*2/n_angles, 0.1
 
 
 def original_particle_gen(N,image):
@@ -72,16 +73,15 @@ def weighted_choice(choices, weights):
 
 def redistribute(poses, p):
     # print(type(poses))
-    pre =    np.random.choice(len(poses),len(poses),p=p)
+    pre = np.random.choice(len(poses),len(poses),p=p)
     # print(type(pre[0]))
     return poses[pre]
 
     # return [weighted_choice(poses, p) for i in range(N)]
 
-def desplazar_particulas(particles):
-    mu_ang, sigma_ang = 360*2/n_angles, 0.1
+def desplazar_particulas(particles, mu, sigma):
     for particle in particles: # particle = [(x, y), angle]
-        new_angle = np.random.normal(mu_ang, sigma_ang, 1)[0]
+        new_angle = np.random.normal(mu, sigma, 1)[0]
         r = np.random.normal(0, 0.1, 1)[0]
         x_var, y_var = r*np.cos(new_angle), r*np.sin(new_angle)
 
@@ -120,7 +120,7 @@ def get_position(sample, N):
     print('Time for getting new distribution of all particles: ', toc)
 
     # move bot and particles
-    particles = desplazar_particulas(particles)
+    particles = desplazar_particulas(particles, mu_ang, sigma_ang)
 
     return
 
