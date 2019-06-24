@@ -13,7 +13,6 @@ sufix = '.txt'
 N = 800
 n_angles = 12
 angles = [360*i/n_angles for i in range(n_angles)]
-new_angle = 360*2/n_angles
 
 
 def original_particle_gen(N,image):
@@ -79,6 +78,18 @@ def redistribute(poses, p):
 
     # return [weighted_choice(poses, p) for i in range(N)]
 
+def desplazar_particulas(particles):
+    mu_ang, sigma_ang = 360*2/n_angles, 0.1
+    for particle in particles: # particle = [(x, y), angle]
+        new_angle = np.random.normal(mu_ang, sigma_ang, 1)[0]
+        r = np.random.normal(0, 0.1, 1)[0]
+        x_var, y_var = r*np.cos(new_angle), r*np.sin(new_angle)
+
+        particle[0][0] += x_var
+        particle[0][1] += y_var
+        particle[1] += new_angle
+    return particles
+
 def get_position(sample, N):
     # get local map
     tic = time.time()
@@ -109,12 +120,12 @@ def get_position(sample, N):
     print('Time for getting new distribution of all particles: ', toc)
 
     # move bot and particles
-    mu, sigma = new_angle, 0.1
-    for particle in particles:
-        particle[1] += np.random.normal(mu, sigma) # gauss segun angulo
+    particles = desplazar_particulas(particles)
 
     return
 
+
+"""
 ##open sample data
 data = [] # file reader, wont matter later
 with open(path+name+sufix) as file:
@@ -162,3 +173,4 @@ for i in range(1):
 
 plt.imshow(copy_n)
 plt.show()
+"""
