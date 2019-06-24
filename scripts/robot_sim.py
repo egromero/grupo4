@@ -4,7 +4,6 @@ from data_to_image import *
 from particles import *
 from collections import Counter
 
-# before = "/Users/noemiisabocrosbyconget/Desktop/RoboticaMovil/grupo4/scripts/"
 path = 'Measures/'
 name = 'measures_27'
 sufix = '.txt'
