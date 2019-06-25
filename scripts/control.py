@@ -77,18 +77,16 @@ class Control():
         ##Lista de objetivos y estado. Ahora es solo un x,y
         self.rate = 60
         self.target = [0,0,None]
-        self.done = False
-        self.counter = 0
+
 
 
         ##odom subs
         self.flag1 = False
         self.old_speed = [0,0]
+        self.target_lin = 0; self.target_ang = 0;
 
         ##booleans for applying speed
         self.angular_only = False
-        self.new_info = False
-        self.ready = False
 
         ## linear and angular controllers
         print('creating controllers')
@@ -124,11 +122,17 @@ class Control():
 
         ##Actuation
         while not rospy.is_shutdown():
+            ##Check if linear controller should be shutdown or turned on
+            if self.angular_only and self.lin_controller.enabled:
+                self.lin_controller.enable(False)
 
+            elif not self.angular_only and not self.lin_controller.enabled:
+                self.lin_controller.enable(True)
+
+            ## Move the robot
             if self.flag1:
                 [lin_value,ang_value] = self.threshold(self.lin_controller.output.data,self.ang_controller.output.data)
                 if self.angular_only:
-		    #print(lin_value/((abs(0.17-abs(ang_value))/0.17+1)**3))
                     lin_value = 0
                     self.move_cmd.linear.x = lin_value
                     self.move_cmd.angular.z = ang_value
@@ -136,14 +140,22 @@ class Control():
 
                     self.move_cmd.linear.x = lin_value
                     self.move_cmd.angular.z = ang_value
-		#print(lin_value)
-		#print(ang_value)
+
                 self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
                 self.mover.publish(self.move_cmd)
-                self.new_info = False
             else:
                 pass
+
+        ## write new targets
+
+            ## Check if one should stop
+            f1 = (abs(target_lin)<self.stop_dict['linear'] and self.target[2]==None)
+            f2 =  (self.target[2]!=None and abs(target_ang)<self.stop_dict['angular'])
+            if f1 or f2:
+                self.lin_controller.enable(False)
+                self.ang_controller.enable(False)
+                self.target_reached_pub.publish(True)
             self.r.sleep()
 
 
@@ -157,9 +169,11 @@ class Control():
         if len(inc_list)!= 3:
             raise IndexError('Length doesn\'t match')
         self.target = inc_list
+        self.lin_controller.enable(True)
+        self.ang_controller.enable(True)
         print(self.target)
-	print(self.target)
-        self.done = False
+
+
 
     ## actuacion subcsriber
     def threshold(self,lin_speed,ang_speed):
@@ -198,33 +212,25 @@ class Control():
 
         ## euclidean distance
         if self.target[2]== None:
-            target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
+            self.target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
 
                 	## desired angle - actual angle
-            target_ang = pi_fix(np.arctan2((self.target[1]-y),(self.target[0]-x))-ang)
+            self.target_ang = pi_fix(np.arctan2((self.target[1]-y),(self.target[0]-x))-ang)
         		#np.arctan2((self.target[1]-y),(self.target[0]-x))
         else:
-            target_lin = 0
-            target_ang = pi_fix(self.target[2]-ang)
+            self.target_lin = 0
+            self.target_ang = pi_fix(self.target[2]-ang)
 
         ## angular movement only boolean
         self.angular_only = True if (abs(target_ang)>0.17 or self.target[2]!=None) else False
 
-        if self.angular_only and self.lin_controller.enabled:
-            self.lin_controller.enable(False)
-        elif not self.angular_only and not self.lin_controller.enabled:
-            self.lin_controller.enable(True)
         self.lin_controller.new_state(target_lin)
         self.ang_controller.new_state(target_ang)
-        ## send flag saying we got new parameters
 
-        ## stop mechanic
-	    #print('linear distance = {}. Angular distance = {}'.format(target_lin,target_ang))
-        # print('linear value = {}. Angular value = {}'.format(self.old_lin_val,self.old_ang_val))
-        if (abs(target_lin)<self.stop_dict['linear'] and self.target[2]==None) or (self.target[2]!=None and abs(target_ang)<self.stop_dict['angular']):
-            self.done = True
-            self.target_reached_pub.publish(True)
-    	# self.counter+=1
+
+
+
+
 if __name__ == '__main__':
 	rospy.init_node( "controller" )
 	handler = Control()

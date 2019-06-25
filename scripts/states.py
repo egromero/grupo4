@@ -9,23 +9,38 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import String
 
 
+def process(data,zero = [0,0,0,0]):
+    new_x = np.cos(zero[3])*(data.pose.pose.position.x-zero[0]) + np.sin(zero[3])*(data.pose.pose.position.y-zero[1])
+    new_y = np.cos(zero[3])*(data.pose.pose.position.y-zero[1]) - np.sin(zero[3])*(data.pose.pose.position.x-zero[0])
+    new_z = data.pose.pose.position.z  - zero[2]
+    angaux = data.pose.pose.orientation.w
+#print('angaux = {}'.format(angaux))
+    angaux2 = -2*np.arccos( angaux ) if (odom_data.pose.pose.orientation.z < 0) else 2*np.arccos( angaux )
+#print('angaux2 = {}'.format(angaux2))
+    new_ang = pi_fix(angaux2-zero[3])
+
+    pos = [new_x,new_y,new_z,new_ang]
+    return pos
+
 class States():
     def __init__(self):
         #First oddometry read to get references
         self.ref = True
-	self.pos = [0 for i in range(4)]
+        self.pos = [0 for i in range(4)]
         self.zero = [0 for i in range(4)]
         self.speed = [0 for i in range(4)]
-	self.timer = Timer()
+        self.timer = Timer()
+
         ##Writer Publisher
         self.writer = rospy.Publisher('write_permit',String,queue_size =10)
 
 
         ## Subscribe to odometry
         rospy.Subscriber( 'odom', Odometry, self.Odom_read)
+        ## state publisher
         self.publisher = rospy.Publisher('our_state',String,queue_size =10)
 
-	#rospy.init_node('states',anonymous = True)
+	    #rospy.init_node('states',anonymous = True)
         self.r = rospy.Rate(60);
         while not rospy.is_shutdown():
             self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
@@ -34,7 +49,7 @@ class States():
             state_write = '{},{},{},{}'.format(self.pos[0],self.pos[1],self.pos[3],self.timer.time())
             #self.writer.publish(state_write)
 	    #print('Posiciones : ',state_write)
-	    self.r.sleep()
+            self.r.sleep()
 
 
     ##Odometry message read
@@ -42,40 +57,13 @@ class States():
         ## Sets reference if first read, else calculates new position values, speed values, and actualizes.
         pose = odom_data.pose.pose #  the x,y,z pose and quaternion orientation
         if self.ref:
-            print('got')
-            self.zero[0] = odom_data.pose.pose.position.x
-            self.zero[1] = odom_data.pose.pose.position.y
-            self.zero[2] = odom_data.pose.pose.position.z
-            angaux = odom_data.pose.pose.orientation.w
-            self.zero[3] = -2*np.arccos( angaux ) if (odom_data.pose.pose.orientation.z < 0) else 2*np.arccos( angaux )
+            self.zero = process(pose)
             self.ref = False
             self.timer.reset()
-        ##Calculate new values
-        new_x = np.cos(self.zero[3])*(odom_data.pose.pose.position.x-self.zero[0]) + np.sin(self.zero[3])*(odom_data.pose.pose.position.y-self.zero[1])
-        new_y = np.cos(self.zero[3])*(odom_data.pose.pose.position.y-self.zero[1]) - np.sin(self.zero[3])*(odom_data.pose.pose.position.x-self.zero[0])
-        new_z = odom_data.pose.pose.position.z  - self.zero[2]
-        angaux = odom_data.pose.pose.orientation.w
-	#print('angaux = {}'.format(angaux))
-        angaux2 = -2*np.arccos( angaux ) if (odom_data.pose.pose.orientation.z < 0) else 2*np.arccos( angaux )
-	#print('angaux2 = {}'.format(angaux2))
-        new_ang = pi_fix(angaux2-self.zero[3])
-        ## Calculate speeds
-        # if self.timer.time()>10:
-        #     x_speed = 1000*(new_x - self.pos[0])/self.timer.time()
-        #     y_speed = 1000*(new_y - self.pos[1])/self.timer.time()
-        #     z_speed = 1000*(new_z - self.pos[2])/self.timer.time()
-        #     ang_speed = 1000*(new_ang - self.pos[3])/self.timer.time()
-        #     self.timer.reset()
-        #     ##Actualize new speeds
-        #     self.speed[0] = x_speed
-        #     self.speed[1] = y_speed
-        #     self.speed[2] = z_speed
-        #     self.speed[3] = ang_speed
-        # ##Actualize new values
-        self.pos[0] = new_x
-        self.pos[1] = new_y
-        self.pos[2] = new_z
-        self.pos[3] = new_ang
+
+        else:
+            self.pos = process(pose,self.zero)
+
 
 if __name__ =='__main__':
     rospy.init_node("states")
