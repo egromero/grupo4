@@ -10,12 +10,12 @@ from std_msgs.msg import String
 
 
 def process(data,zero = [0,0,0,0]):
-    new_x = np.cos(zero[3])*(data.pose.pose.position.x-zero[0]) + np.sin(zero[3])*(data.pose.pose.position.y-zero[1])
-    new_y = np.cos(zero[3])*(data.pose.pose.position.y-zero[1]) - np.sin(zero[3])*(data.pose.pose.position.x-zero[0])
-    new_z = data.pose.pose.position.z  - zero[2]
-    angaux = data.pose.pose.orientation.w
+    new_x = np.cos(zero[3])*(data.position.x-zero[0]) + np.sin(zero[3])*(data.position.y-zero[1])
+    new_y = np.cos(zero[3])*(data.position.y-zero[1]) - np.sin(zero[3])*(data.position.x-zero[0])
+    new_z = data.position.z  - zero[2]
+    angaux = data.orientation.w
 #print('angaux = {}'.format(angaux))
-    angaux2 = -2*np.arccos( angaux ) if (odom_data.pose.pose.orientation.z < 0) else 2*np.arccos( angaux )
+    angaux2 = -2*np.arccos( angaux ) if (data.orientation.z < 0) else 2*np.arccos( angaux )
 #print('angaux2 = {}'.format(angaux2))
     new_ang = pi_fix(angaux2-zero[3])
 
