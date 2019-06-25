@@ -84,7 +84,6 @@ class Control():
         self.flag1 = False
         self.old_speed = [0,0]
         self.target_lin = 0; self.target_ang = 0;
-	self.active = False
 
         ##booleans for applying speed
         self.angular_only = False
@@ -94,7 +93,7 @@ class Control():
         self.lin_controller = Generic_Controller('lin_control')
         self.ang_controller = Generic_Controller('ang_control')
 
-        
+
 
         ##Movement publisher and message
         print('Creating movement publisher')
@@ -152,8 +151,7 @@ class Control():
             ## Check if one should stop
             f1 = (abs(self.target_lin)<self.stop_dict['linear'] and self.target[2]==None)
             f2 =  (self.target[2]!=None and abs(self.target_ang)<self.stop_dict['angular'])
-            if (f1 or f2) and self.active:
-		self.active = False
+            if (f1 or f2) and self.data_ready:
                 self.lin_controller.enable(False)
                 self.ang_controller.enable(False)
                 self.target_reached_pub.publish(True)
@@ -167,11 +165,11 @@ class Control():
 
     ## Should be changed into a node with with a sub-callback function. For now just create an object of this class in main and use this method
     def new_target(self,data):
+        self.data_ready = False
         inc_list = json.loads(data.data)
         if len(inc_list)!= 3:
             raise IndexError('Length doesn\'t match')
         self.target = inc_list
-        self.active = True
         self.lin_controller.enable(True)
         self.ang_controller.enable(True)
         print(self.target)
@@ -213,7 +211,7 @@ class Control():
         y = inc_dict['y']
         ang = inc_dict['ang_pos']
 
-        ## euclidean distance
+
         if self.target[2]== None:
             self.target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
 
@@ -223,7 +221,7 @@ class Control():
         else:
             self.target_lin = 0
             self.target_ang = pi_fix(self.target[2]-ang)
-
+        self.data_ready = True
         ## angular movement only boolean
         self.angular_only = True if (abs(self.target_ang)>0.17 or self.target[2]!=None) else False
 
