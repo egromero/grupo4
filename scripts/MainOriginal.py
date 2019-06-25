@@ -29,7 +29,7 @@ class Turtlebot(object):
 				self.r.sleep()
 	def target_reached_callback(self,data):
 		self.flag = data.data
-		#print('incoming flag :',data.data)
+		print('incoming flag :',data.data)
 
 if __name__ == '__main__':
 	rospy.init_node( "turtlebot_g4" )

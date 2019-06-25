@@ -84,6 +84,7 @@ class Control():
         self.flag1 = False
         self.old_speed = [0,0]
         self.target_lin = 0; self.target_ang = 0;
+	self.active = False
 
         ##booleans for applying speed
         self.angular_only = False
@@ -93,9 +94,7 @@ class Control():
         self.lin_controller = Generic_Controller('lin_control')
         self.ang_controller = Generic_Controller('ang_control')
 
-        ## data ready subscriber
-        rospy.Subscriber('/lin_control/ready',Bool,self.controller_ready)
-        rospy.Subscriber('/ang_control/ready',Bool,self.controller_ready)
+        
 
         ##Movement publisher and message
         print('Creating movement publisher')
@@ -116,6 +115,9 @@ class Control():
         rospy.Subscriber('our_state',String,self.get_state)
         rospy.sleep( 0.2 )
 
+	## data ready subscriber
+        rospy.Subscriber('/lin_control/ready',Bool,self.controller_ready)
+        rospy.Subscriber('/ang_control/ready',Bool,self.controller_ready)
 
         self.timer = Timer()
         self.timer.reset()
@@ -147,15 +149,15 @@ class Control():
             else:
                 pass
 
-        ## write new targets
-
             ## Check if one should stop
-            f1 = (abs(target_lin)<self.stop_dict['linear'] and self.target[2]==None)
-            f2 =  (self.target[2]!=None and abs(target_ang)<self.stop_dict['angular'])
-            if f1 or f2:
+            f1 = (abs(self.target_lin)<self.stop_dict['linear'] and self.target[2]==None)
+            f2 =  (self.target[2]!=None and abs(self.target_ang)<self.stop_dict['angular'])
+            if (f1 or f2) and self.active:
+		self.active = False
                 self.lin_controller.enable(False)
                 self.ang_controller.enable(False)
                 self.target_reached_pub.publish(True)
+		rospy.sleep(0.2)
             self.r.sleep()
 
 
@@ -169,6 +171,7 @@ class Control():
         if len(inc_list)!= 3:
             raise IndexError('Length doesn\'t match')
         self.target = inc_list
+        self.active = True
         self.lin_controller.enable(True)
         self.ang_controller.enable(True)
         print(self.target)
@@ -176,7 +179,7 @@ class Control():
 
 
     ## actuacion subcsriber
-    def threshold(self,lin_speed,ang_speed):
+    def threshold(self,lin_val,ang_val):
         lin_splimit = self.speed_dict['linear']
         lin_aclimit = self.accel_dict['linear']
 
@@ -185,20 +188,20 @@ class Control():
 
         old_lin_val = self.old_speed[0]
         old_ang_val = self.old_speed[1]
-
+	time_delta = 1.0/self.rate
         ## get accel
         lin_accel = (lin_val - old_lin_val)/time_delta
         ang_accel = (ang_val - old_ang_val)/time_delta
 
         ## compare maximum acc with supposed acc
-        lin_val = lin_speed if abs(lin_accel)<lin_aclimit else old_lin_val+ np.sign(lin_accel)*lin_aclimit*1/self.rate
-        ang_val = ang_speed if abs(ang_accel)<ang_aclimit else old_ang_val+ np.sign(ang_accel)*ang_aclimit*1/self.rate
+        lin_val = lin_val if abs(lin_accel)<lin_aclimit else old_lin_val+ np.sign(lin_accel)*lin_aclimit*time_delta
+        ang_val = ang_val if abs(ang_accel)<ang_aclimit else old_ang_val+ np.sign(ang_accel)*ang_aclimit*time_delta
 
 
         ## Max velocity check
-        lin_val = lin_speed if abs(lin_speed)<lin_splimit else lin_splimit*np.sign(lin_speed)
+        lin_val = lin_val if abs(lin_val)<lin_splimit else lin_splimit*np.sign(lin_val)
 
-        ang_val = ang_speed if abs(ang_speed)<ang_splimit else ang_splimit*np.sign(ang_speed)
+        ang_val = ang_val if abs(ang_val)<ang_splimit else ang_splimit*np.sign(ang_val)
 
         return [lin_val,ang_val]
 
@@ -222,10 +225,10 @@ class Control():
             self.target_ang = pi_fix(self.target[2]-ang)
 
         ## angular movement only boolean
-        self.angular_only = True if (abs(target_ang)>0.17 or self.target[2]!=None) else False
+        self.angular_only = True if (abs(self.target_ang)>0.17 or self.target[2]!=None) else False
 
-        self.lin_controller.new_state(target_lin)
-        self.ang_controller.new_state(target_ang)
+        self.lin_controller.new_state(self.target_lin)
+        self.ang_controller.new_state(self.target_ang)
 
 
 
