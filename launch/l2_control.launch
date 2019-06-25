@@ -13,17 +13,13 @@
     <param name="windup_limit" value="0.1"/>
   </node>
 
-  <node pkg = "grupo4" type = "states.py" name = "states" output="screen">
+  <node pkg = "g43" type = "states.py" name = "states" output="screen">
   </node>
 
-  <node pkg = "grupo4" type = "control.py" name = "control" output="screen">
+  <node pkg = "g43" type = "control.py" name = "control" output="screen">
   </node>
 
 
-  <node pkg = "grupo4" type = "sensor_model.py" name = "sensormodel" output="screen">
-  </node>
-  
-  <node pkg="grupo4" type="static_transform_publisher" name="base_link_to_kinect_frame_nav" args="-0.1 0.0 0.30 -1.570796327 0.0 1.570796327 /base_link /kinect_frame 100" />
-   <include file="$(find openni_launch)/launch/openni.launch" />
+
 
 </launch>
