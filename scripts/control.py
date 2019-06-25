@@ -16,79 +16,94 @@ class Generic_Controller():
         self.output = 0
         self.ready = False
         self.enabled = True
-            ##init de controlador
-    	print('creating setpoint publisher')
-    	print('/'+directory+'/setpoint')
+
+        ##init de controlador
+
+    	## Setpoint publisher
         self.setpoint_pub = rospy.Publisher( '/'+directory+'/setpoint', Float64, queue_size = 1 )
         while self.setpoint_pub.get_num_connections() == 0 and not rospy.is_shutdown():
             rospy.sleep( 0.2 )
 
+
+        ## Enable publisher (publishes to enable or disable controller)
         self.enable_pub = rospy.Publisher('/'+directory+'/pid_enable',Bool,queue_size=10)
         while self.enable_pub.get_num_connections() == 0 and not rospy.is_shutdown():
            rospy.sleep( 0.2 )
 
+        ## Ready publisher (publishes to change a flag - interrupt like working instead of polling)
+        self.ready_pub = rospy.Publisher('/'+directory+'/ready',Bool,queue_size=10)
+        while self.enable_pub.get_num_connections() == 0 and not rospy.is_shutdown():
+           rospy.sleep( 0.2 )
 
-    	print('creating state publisher')
+
+    	## publish current state to controller
         self.state_pub = rospy.Publisher( '/'+directory+'/state', Float64, queue_size = 10 )
         while self.state_pub.get_num_connections() == 0 and not rospy.is_shutdown():
             rospy.sleep( 0.2 )
 
-    	print('creating output subscriber')
+    	## Creates subscriber that recieves output once ready
         self.output_sub = rospy.Subscriber( '/'+directory+'/control_effort', Float64, self.response )
 
 
 
-            ##Movement publisher
-
-            #Inicializacion de target = 0
+        #Inicializacion de target = 0
         self.setpoint_pub.publish(0)
 
+    ## input = Boolean
     def enable(self,input):
         self.enable_pub.publish(input)
         self.enabled = input
 
+    ## input = newstate (numeric)
     def new_state(self,input):
         ##generico
         self.ready = False
         self.state_pub.publish(input)
 
+    ## controller output is ready callback
     def response(self,data):
         self.output = data
         self.ready = True
+        self.ready_pub.publish(True)
 
 
 class Control():
+    ## maximum values for threshold
     speed_dict = {'linear':0.3,'angular':0.7}
     accel_dict = {'linear':0.2,'angular':0.3}
     stop_dict = {'linear':0.04,'angular':0.1}
     def __init__(self):
 
         ##Lista de objetivos y estado. Ahora es solo un x,y
+        self.rate = 60
         self.target = [0,0,None]
         self.done = False
         self.counter = 0
 
 
         ##odom subs
-
-        self.old_lin_val = 0
-        self.old_ang_val = 0
+        self.flag1 = False
+        self.old_speed = [0,0]
 
         ##booleans for applying speed
         self.angular_only = False
         self.new_info = False
         self.ready = False
-        #hijos
-        ## Son llamados en el callback de odom para que escupan las velocidades que el controlador dice. Falta aplicar threshold
+
+        ## linear and angular controllers
         print('creating controllers')
         self.lin_controller = Generic_Controller('lin_control')
         self.ang_controller = Generic_Controller('ang_control')
+
+        ## data ready subscriber
+        rospy.Subscriber('/lin_control/ready',Bool,self.controller_ready)
+        rospy.Subscriber('/ang_control/ready',Bool,self.controller_ready)
 
         ##Movement publisher and message
         print('Creating movement publisher')
         self.mover = rospy.Publisher( '/cmd_vel_mux/input/navi', Twist, queue_size=10 )
         self.move_cmd = Twist()
-        self.r = rospy.Rate(5)
+        self.r = rospy.Rate(self.rate)
 
 	##Controller ready publisher and controller setpoint sub
         self.target_reached_pub = rospy.Publisher('target_reached',Bool,queue_size=10)
@@ -104,34 +119,36 @@ class Control():
         rospy.sleep( 0.2 )
 
 
-
         self.timer = Timer()
         self.timer.reset()
+
         ##Actuation
         while not rospy.is_shutdown():
-            flag1 = (self.lin_controller.ready and self.ang_controller.ready) and not self.angular_only
-            flag2 = self.ang_controller.ready  and self.angular_only
-            self.ready = flag1 or flag2
-            if self.ready and not self.done:
+
+            if self.flag1:
                 [lin_value,ang_value] = self.threshold(self.lin_controller.output.data,self.ang_controller.output.data)
                 if self.angular_only:
 		    #print(lin_value/((abs(0.17-abs(ang_value))/0.17+1)**3))
-                    lin_value = lin_value/((abs(0.17-abs(ang_value))/0.17+1)**3)
+                    lin_value = 0
                     self.move_cmd.linear.x = lin_value
                     self.move_cmd.angular.z = ang_value
                 else:
+
                     self.move_cmd.linear.x = lin_value
                     self.move_cmd.angular.z = ang_value
 		#print(lin_value)
 		#print(ang_value)
-                self.old_lin_val = lin_value
-                self.old_ang_val = ang_value
+                self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
                 self.mover.publish(self.move_cmd)
                 self.new_info = False
             else:
-                self.timer.reset()
+                pass
             self.r.sleep()
+
+
+    def controller_ready(self,input):
+        self.flag1 = self.lin_controller.ready and self.ang_controller.ready
 
 
     ## Should be changed into a node with with a sub-callback function. For now just create an object of this class in main and use this method
@@ -146,36 +163,28 @@ class Control():
 
     ## actuacion subcsriber
     def threshold(self,lin_speed,ang_speed):
-        time_delta = self.timer.time()
-        self.timer.reset()
-
         lin_splimit = self.speed_dict['linear']
         lin_aclimit = self.accel_dict['linear']
 
         ang_splimit = self.speed_dict['angular']
         ang_aclimit = self.accel_dict['angular']
 
-        old_lin_val = self.old_lin_val
-        old_ang_val = self.old_ang_val
-        # print('1',lin_speed)
+        old_lin_val = self.old_speed[0]
+        old_ang_val = self.old_speed[1]
+
+        ## get accel
+        lin_accel = (lin_val - old_lin_val)/time_delta
+        ang_accel = (ang_val - old_ang_val)/time_delta
+
+        ## compare maximum acc with supposed acc
+        lin_val = lin_speed if abs(lin_accel)<lin_aclimit else old_lin_val+ np.sign(lin_accel)*lin_aclimit*1/self.rate
+        ang_val = ang_speed if abs(ang_accel)<ang_aclimit else old_ang_val+ np.sign(ang_accel)*ang_aclimit*1/self.rate
+
+
         ## Max velocity check
         lin_val = lin_speed if abs(lin_speed)<lin_splimit else lin_splimit*np.sign(lin_speed)
 
         ang_val = ang_speed if abs(ang_speed)<ang_splimit else ang_splimit*np.sign(ang_speed)
-
-        # print('2',lin_val)
-        ## Max accel check
-        # print('2.5',)
-        # print('2.6',old_lin_val,lin_aclimit*time_delta)
-        lin_accel = abs(lin_val - old_lin_val)/time_delta
-        ang_accel = abs(ang_val - old_ang_val)/time_delta
-
-        acc_limit_lin = old_lin_val + np.sign(lin_val)*lin_aclimit*time_delta
-        acc_limit_ang = old_ang_val + np.sign(ang_val)*ang_aclimit*time_delta
-        lin_val =  acc_limit_lin if ((lin_accel > lin_aclimit) and (abs(lin_val) > abs(acc_limit_lin)))  else lin_val
-
-        ang_val =  acc_limit_ang if ((ang_accel > ang_aclimit) and (abs(ang_val) > abs(acc_limit_ang)))  else ang_val
-        # print('3',lin_val,time_delta)
 
         return [lin_val,ang_val]
 
@@ -186,12 +195,6 @@ class Control():
         x = inc_dict['x']
         y = inc_dict['y']
         ang = inc_dict['ang_pos']
-	# if self.counter%60 ==0:
-        # pass
-	  #print("x = {}, y = {}, angle = {}".format(x,y,ang))
-        ## Darle a los controladores el objetivo
-        ## Objetivo = hacer alguna distancia 0.
-        ## Recordatorio: Kp debe ser negativo
 
         ## euclidean distance
         if self.target[2]== None:
@@ -206,6 +209,7 @@ class Control():
 
         ## angular movement only boolean
         self.angular_only = True if (abs(target_ang)>0.17 or self.target[2]!=None) else False
+
         if self.angular_only and self.lin_controller.enabled:
             self.lin_controller.enable(False)
         elif not self.angular_only and not self.lin_controller.enabled:
@@ -215,7 +219,6 @@ class Control():
         ## send flag saying we got new parameters
 
         ## stop mechanic
-	# if self.counter%60==0:
 	    #print('linear distance = {}. Angular distance = {}'.format(target_lin,target_ang))
         # print('linear value = {}. Angular value = {}'.format(self.old_lin_val,self.old_ang_val))
         if (abs(target_lin)<self.stop_dict['linear'] and self.target[2]==None) or (self.target[2]!=None and abs(target_ang)<self.stop_dict['angular']):

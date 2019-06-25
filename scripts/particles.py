@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import uniform
 import time
-from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center,nothing_value
+from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center,nothing_value,threshold
 from corr_functions import *
 
 check_max = False
@@ -12,7 +12,7 @@ def original_particles_gen(N,n_angles,image):
     angles = [360*i/n_angles for i in range(n_angles)]
     rows,cols = image.shape
     image_vector = image.reshape(1,rows*cols)
-    binary_index = np.where(image_vector<nothing_value)[1]
+    binary_index = np.where(image_vector<=nothing_value-threshold)[1]
     possible_locations = [(index//cols,index%cols) for index in binary_index]
 
 
@@ -88,7 +88,7 @@ def desplazar_particulas(particles, mu, sigma):
 
         particle[0] = (particle[0][0] + x_var, particle[0][1] + y_var)
         particle[1] += new_angle
-    return particles
+    return np.array(particles)
 
 def get_position(sample, N, first_data=None):
 

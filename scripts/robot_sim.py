@@ -4,14 +4,16 @@ from data_to_image import *
 from particles import *
 from collections import Counter
 
+# before = "/Users/noemiisabocrosbyconget/Desktop/RoboticaMovil/grupo4/scripts/"
 path = 'Measures/'
-name = 'measures_27'
+name = 'measures_29'
 sufix = '.txt'
 
 
 
 N = 800
 n_angles = 12
+sigma = 2
 
 
 
@@ -38,12 +40,12 @@ print(len(data))
 for i,sample in enumerate(data):
     tic = time.time()
     cartesian_matrix = generate_cartesian_matrix(sample)
-    plt.imshow(cartesian_matrix)
-    plt.show()
+    # plt.imshow(cartesian_matrix)
+    # plt.show()
     weights = get_weights(particles,cartesian_matrix,global_map,'ccoeff_norm')
     # print(weights)
     particles = redistribute(particles,weights)
-    particles = np.array([[coords,ang+60] for [coords,ang] in particles])
+    particles = desplazar_particulas(particles,60,sigma)
     copy_n = np.copy(global_map)
     for particle in particles:
         copy_n[particle[0][0],particle[0][1]] = 2
@@ -55,7 +57,9 @@ y_mean = np.sum([coords[0]/len(particles) for [coords,angle] in particles])
 angle_mean = np.sum([(angle-360)/len(particles) for [coords,angle] in particles])
 print(y_mean,x_mean,angle_mean)
 plt.imshow(copy_n)
-plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 3)
+
+plt.arrow(x_mean,y_mean,np.cos(angle_mean
+/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 3)
 plt.show()
 toc = time.time()-tic
 print(Counter(particles))
