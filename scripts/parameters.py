@@ -1,3 +1,4 @@
+import numpy as np
 path = 'Measures/'
 name = 'measures_0'
 sufix = '.txt'
@@ -26,9 +27,11 @@ obstacle_distance = 0.4
 rate = 60
 
 ang_speed = 0.5
-ang_acc = 0.2
+ang_acc = 0.05
 ang_stop = 0.1
+ang_thresh = 2/36*np.pi
 
-lin_speed = 0.3 
+
+lin_speed = 0.3
 lin_acc = 0.06
 lin_stop = 0.05

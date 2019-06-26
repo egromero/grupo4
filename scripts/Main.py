@@ -29,6 +29,8 @@ class Turtlebot(object):
 				#print('Actual flag' ,self.flag)
 				self.r.sleep()
 			rospy.sleep(0.1)
+			self.in_route = False
+
 
 	def send_route(self,route):
 		encoded = json.dumps(route)
@@ -38,9 +40,10 @@ class Turtlebot(object):
 
 	## reset the state and spin the robot
 	def obstacle_response(self,data):
-		if data.data:
+		if data.data and not self.in_route:
 			self.reset_pub.publish(True)
 			self.send_route([0,0,-np.pi/4])
+			self.in_route = True
 
 
 	def target_reached_callback(self,data):

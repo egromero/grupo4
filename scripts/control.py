@@ -77,7 +77,7 @@ class Control():
     def __init__(self):
 
         ##Lista de objetivos y estado. Ahora es solo un x,y
-        self.rate = 60
+        self.rate = rate
         self.target = [0,0,None]
         self.target_list=  []
 
@@ -132,13 +132,12 @@ class Control():
             if self.flag1:
                 lin_value =  self.lin_controller.output.data; ang_value = self.ang_controller.output.data
                 [lin_value,ang_value] = self.threshold(self.lin_controller.output.data,self.ang_controller.output.data)
-                if self.angular_only and self.target[2]!=None:
+                if self.angular_only:
                     lin_value = 0
-                elif self.angular_only:
-                    lin_value = lin_value/3
+                [lin_value,ang_value] = self.threshold(lin_value,ang_value)
             	self.move_cmd.linear.x = lin_value
             	self.move_cmd.angular.z = ang_value
-                [lin_value,ang_value] = self.threshold(lin_value,ang_value)
+
 
 		print(lin_value)
 
@@ -192,7 +191,7 @@ class Control():
 
         old_lin_val = self.old_speed[0]
         old_ang_val = self.old_speed[1]
-	time_delta = 1.0/self.rate
+        time_delta = 1.0/self.rate
         ## get accel
         lin_accel = (lin_val - old_lin_val)/time_delta
         ang_accel = (ang_val - old_ang_val)/time_delta
