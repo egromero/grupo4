@@ -23,7 +23,7 @@ class Obstacle():
             data = laserScan.ranges
             valid_values = np.array(data[valid[0]:valid[1]])
             boolean_data = np.any(valid_values<obstacle_distance)
-	    print(boolean_data)
+	    #	print(boolean_data)
             self.publisher.publish(boolean_data)
             self.flag = False
 

@@ -22,16 +22,16 @@ threshold = 0.001
 
 rolled = 5
 
-obstacle_distance = 0.4
+obstacle_distance = 0.5
 
 rate = 60
 
-ang_speed = 0.5
-ang_acc = 0.05
+ang_speed = 0.6
+ang_acc = 0.25
 ang_stop = 0.1
 ang_thresh = 2/36*np.pi
 
 
-lin_speed = 0.3
-lin_acc = 0.06
+lin_speed = 0.2
+lin_acc = 0.08
 lin_stop = 0.05

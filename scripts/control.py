@@ -139,7 +139,7 @@ class Control():
             	self.move_cmd.angular.z = ang_value
 
 
-		print(lin_value)
+		#print(lin_value)
 
                 self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))

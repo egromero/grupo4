@@ -9,6 +9,9 @@ repeat_route = [0.5,0,None]
 
 class Turtlebot(object):
 	def __init__( self ):
+		self.flag = True
+		self.in_route = False
+
 		## bad joke.
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
 		rospy.sleep( 0.2 )
@@ -20,7 +23,7 @@ class Turtlebot(object):
 		##obstacle sub
 		rospy.Subscriber('obstacle',Bool,self.obstacle_response)
 
-		self.flag = True
+
 		self.r = rospy.Rate(5)
 
 		while not rospy.is_shutdown():
@@ -28,7 +31,7 @@ class Turtlebot(object):
 			while not self.flag and not rospy.is_shutdown():
 				#print('Actual flag' ,self.flag)
 				self.r.sleep()
-			rospy.sleep(0.1)
+			rospy.sleep(2)
 			self.in_route = False
 
 
@@ -40,9 +43,12 @@ class Turtlebot(object):
 
 	## reset the state and spin the robot
 	def obstacle_response(self,data):
+		if data.data:
+			print('obstacle got')
 		if data.data and not self.in_route:
+			print('changing angle due to obstacle')
 			self.reset_pub.publish(True)
-			self.send_route([0,0,-np.pi/4])
+			self.send_route([0,0,np.pi/3])
 			self.in_route = True
 
 
