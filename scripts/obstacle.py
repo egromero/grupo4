@@ -13,13 +13,18 @@ class Obstacle():
 
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
 
+        self.r = rospy.Rate(rate)
+
+        while not rospy.is_shutdown():
+            self.flag = True
+            self.r.sleep()
     def scanner_data(self, laserScan):
-	print('something')
-	data = laserScan.ranges
-	valid_values = data[valid[0]:valid[1]]
-    	boolean_data = np.any(valid_values<obstacle_distance)
-	print(valid_values[30])
-	self.publisher.publish(boolean_data)
+        if self.flag:
+            data = laserScan.ranges
+            valid_values = data[valid[0]:valid[1]]
+            boolean_data = np.any(valid_values<obstacle_distance)
+            self.publisher.publish(boolean_data)
+            self.flag = False
 
 
 if __name__ == '__main__':

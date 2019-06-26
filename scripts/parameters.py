@@ -22,3 +22,5 @@ threshold = 0.001
 rolled = 5
 
 obstacle_distance = 0.4
+
+rate = 60

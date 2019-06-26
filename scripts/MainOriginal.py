@@ -6,7 +6,7 @@ import numpy as np
 
 from std_msgs.msg import String, Bool
 
-route = [[0,0,np.pi/2],[0,0,np.pi/2],[0,0,np.pi/2],[0,0,np.pi/2]]
+repeat_route = [0.5,0,None]
 
 class Turtlebot(object):
 	def __init__( self ):
@@ -18,9 +18,12 @@ class Turtlebot(object):
 		rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
 		rospy.sleep( 0.2 )
 
+		##obstancle sub
+		rospy.Subscriber('obstacle',Bool,obstacle_response)
+
 		self.flag = True
 		self.r = rospy.Rate(5)
-		for item in route:
+		while not rospy.is_shutdown():
 			encoded = json.dumps(item)
 			self.target_publisher.publish(encoded)
 			print('Sent {}'.format(encoded))
@@ -29,6 +32,12 @@ class Turtlebot(object):
 				#print('Actual flag' ,self.flag)
 				self.r.sleep()
                         rospy.sleep(0.1)
+
+	def obstacle_response(self,data):
+		if data.data:
+			self.flag = True
+			self.reset_pub.publish(True)
+
 	def target_reached_callback(self,data):
 		self.flag = data.data
 		self.reset_pub.publish(True)

@@ -42,7 +42,8 @@ class Generic_Controller():
             rospy.sleep( 0.2 )
 
     	## Creates subscriber that recieves output once ready
-        self.output_sub = rospy.Subscriber( '/'+directory+'/control_effort', Float64, self.response )
+        rospy.Subscriber( '/'+directory+'/control_effort', Float64, self.response )
+
 
 
 
@@ -77,7 +78,7 @@ class Control():
         ##Lista de objetivos y estado. Ahora es solo un x,y
         self.rate = 60
         self.target = [0,0,None]
-	self.target_list=  []
+        self.target_list=  []
 
 
 
@@ -85,9 +86,10 @@ class Control():
         self.flag1 = False
         self.old_speed = [0,0]
         self.target_lin = 0; self.target_ang = 0;
-
+        self.active = True
         ##booleans for applying speed
         self.angular_only = False
+
 
         ## linear and angular controllers
         print('creating controllers')
@@ -119,42 +121,45 @@ class Control():
         rospy.Subscriber('/lin_control/ready',Bool,self.controller_ready)
         rospy.Subscriber('/ang_control/ready',Bool,self.controller_ready)
 
+
         self.timer = Timer()
         self.timer.reset()
 
         ##Actuation
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and self.active:
 
             ## Move the robot
             if self.flag1:
                 lin_value =  self.lin_controller.output.data; ang_value = self.ang_controller.output.data
                 [lin_value,ang_value] = self.threshold(self.lin_controller.output.data,self.ang_controller.output.data)
                 if self.angular_only and self.target[2]!=None:
-			lin_value = 0
-		elif self.angular_only:
-			lin_value = lin_value/3
+                    lin_value = 0
+                elif self.angular_only:
+                    lin_value = lin_value/3
             	self.move_cmd.linear.x = lin_value
             	self.move_cmd.angular.z = ang_value
-		[lin_value,ang_value] = self.threshold(lin_value,ang_value)
+                [lin_value,ang_value] = self.threshold(lin_value,ang_value)
 		#print(ang_value)
 
                 self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
                 self.mover.publish(self.move_cmd)
-            else:
-                pass
+
 
             ## Check if one should stop
             f1 = (abs(self.target_lin)<self.stop_dict['linear'] and self.target[2]==None)
             f2 =  (self.target[2]!=None and abs(self.target_ang)<self.stop_dict['angular'])
             if (f1 or f2) and self.data_ready:
-                self.lin_controller.enable(False)
-                self.ang_controller.enable(False)
-		self.flag1 = False
+                self.shutdown()
                 self.target_reached_pub.publish(True)
-		rospy.sleep(0.2)
             self.r.sleep()
 
+    def shutdown(self):
+        self.lin_controller.enable(False)
+        self.ang_controller.enable(False)
+        self.flag1 = False
+        self.active = False
+        rospy.sleep(0.2)
 
     def controller_ready(self,input):
         self.flag1 = (self.lin_controller.ready and self.ang_controller.ready) or (self.ang_controller.ready and self.angular_only)
@@ -162,6 +167,7 @@ class Control():
 
     ## Should be changed into a node with with a sub-callback function. For now just create an object of this class in main and use this method
     def new_target(self,data):
+        self.shutdown()
         self.data_ready = False
         inc_list = json.loads(data.data)
         if len(inc_list)!= 3:
@@ -169,6 +175,7 @@ class Control():
         self.target = inc_list
         self.lin_controller.enable(True)
         self.ang_controller.enable(True)
+        self.active = True
         print(self.target)
 
 
@@ -209,7 +216,7 @@ class Control():
         ang = inc_dict['ang_pos']
 
 
-	
+
         if self.target[2]== None:
             self.target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
 
