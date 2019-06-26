@@ -18,20 +18,20 @@ class Turtlebot(object):
 		rospy.sleep( 0.2 )
 
 		##obstacle sub
-		rospy.Subscriber('obstacle',Bool,obstacle_response)
+		rospy.Subscriber('obstacle',Bool,self.obstacle_response)
 
 		self.flag = True
 		self.r = rospy.Rate(5)
 
-		while not rospy.is_shutdown()
+		while not rospy.is_shutdown():
 			self.send_route(repeat_route)
 			while not self.flag and not rospy.is_shutdown():
 				#print('Actual flag' ,self.flag)
 				self.r.sleep()
-            rospy.sleep(0.1)
+			rospy.sleep(0.1)
 
 	def send_route(self,route):
-		encoded = json.dumps(item)
+		encoded = json.dumps(route)
 		self.target_publisher.publish(encoded)
 		print('Sent {}'.format(encoded))
 		self.flag = False
@@ -40,7 +40,7 @@ class Turtlebot(object):
 	def obstacle_response(self,data):
 		if data.data:
 			self.reset_pub.publish(True)
-			self.send_route([0,0,np.pi/2])
+			self.send_route([0,0,-np.pi/4])
 
 
 	def target_reached_callback(self,data):

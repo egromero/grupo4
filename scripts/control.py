@@ -6,6 +6,7 @@ import json
 from util import pi_fix,Timer
 from std_msgs.msg import Float64, String , Bool
 from geometry_msgs.msg import Twist
+from parameters import*
 
 
 
@@ -70,9 +71,9 @@ class Generic_Controller():
 
 class Control():
     ## maximum values for threshold
-    speed_dict = {'linear':0.28,'angular':0.5}
-    accel_dict = {'linear':0.04,'angular':0.2}
-    stop_dict = {'linear':0.05,'angular':0.1}
+    speed_dict = {'linear':lin_speed,'angular':ang_speed}
+    accel_dict = {'linear':lin_acc,'angular':ang_acc}
+    stop_dict = {'linear':lin_stop,'angular':ang_stop}
     def __init__(self):
 
         ##Lista de objetivos y estado. Ahora es solo un x,y
@@ -126,8 +127,7 @@ class Control():
         self.timer.reset()
 
         ##Actuation
-        while not rospy.is_shutdown() and self.active:
-
+        while not rospy.is_shutdown():
             ## Move the robot
             if self.flag1:
                 lin_value =  self.lin_controller.output.data; ang_value = self.ang_controller.output.data
@@ -139,7 +139,8 @@ class Control():
             	self.move_cmd.linear.x = lin_value
             	self.move_cmd.angular.z = ang_value
                 [lin_value,ang_value] = self.threshold(lin_value,ang_value)
-		#print(ang_value)
+
+		print(lin_value)
 
                 self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
@@ -147,11 +148,12 @@ class Control():
 
 
             ## Check if one should stop
-            f1 = (abs(self.target_lin)<self.stop_dict['linear'] and self.target[2]==None)
-            f2 =  (self.target[2]!=None and abs(self.target_ang)<self.stop_dict['angular'])
-            if (f1 or f2) and self.data_ready:
-                self.shutdown()
-                self.target_reached_pub.publish(True)
+	    if self.active:
+            	f1 = (abs(self.target_lin)<self.stop_dict['linear'] and self.target[2]==None)
+            	f2 =  (self.target[2]!=None and abs(self.target_ang)<self.stop_dict['angular'])
+            	if (f1 or f2) and self.data_ready:
+                    self.shutdown()
+        	    self.target_reached_pub.publish(True)
             self.r.sleep()
 
     def shutdown(self):
