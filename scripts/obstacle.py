@@ -7,14 +7,22 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Bool
 from parameters import *
 class Obstacle():
-    def __init__():
+    def __init__(self):
         print('creating obstacle checker class...')
         self.publisher = rospy.Publisher('obstacle',Bool,queue_size=1)
 
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
 
-	def scanner_data(self, laserScan):
-		data = laserScan.ranges
-        boolean_data = np.any(data[valid]<obstacle_distance)
-        print(boolean_data)
-        self.publisher.publish(boolean_data)
+    def scanner_data(self, laserScan):
+	print('something')
+	data = laserScan.ranges
+	valid_values = data[valid[0]:valid[1]]
+    	boolean_data = np.any(valid_values<obstacle_distance)
+	print(valid_values[30])
+	self.publisher.publish(boolean_data)
+
+
+if __name__ == '__main__':
+	rospy.init_node( "obstacle" )
+	handler = Obstacle()
+	rospy.spin()
