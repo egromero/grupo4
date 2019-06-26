@@ -69,14 +69,15 @@ class Generic_Controller():
 
 class Control():
     ## maximum values for threshold
-    speed_dict = {'linear':0.3,'angular':0.7}
-    accel_dict = {'linear':0.2,'angular':0.3}
-    stop_dict = {'linear':0.04,'angular':0.1}
+    speed_dict = {'linear':0.28,'angular':0.5}
+    accel_dict = {'linear':0.04,'angular':0.2}
+    stop_dict = {'linear':0.05,'angular':0.1}
     def __init__(self):
 
         ##Lista de objetivos y estado. Ahora es solo un x,y
         self.rate = 60
         self.target = [0,0,None]
+	self.target_list=  []
 
 
 
@@ -123,24 +124,19 @@ class Control():
 
         ##Actuation
         while not rospy.is_shutdown():
-            ##Check if linear controller should be shutdown or turned on
-            if self.angular_only and self.lin_controller.enabled:
-                self.lin_controller.enable(False)
-
-            elif not self.angular_only and not self.lin_controller.enabled:
-                self.lin_controller.enable(True)
 
             ## Move the robot
             if self.flag1:
+                lin_value =  self.lin_controller.output.data; ang_value = self.ang_controller.output.data
                 [lin_value,ang_value] = self.threshold(self.lin_controller.output.data,self.ang_controller.output.data)
-                if self.angular_only:
-                    lin_value = 0
-                    self.move_cmd.linear.x = lin_value
-                    self.move_cmd.angular.z = ang_value
-                else:
-
-                    self.move_cmd.linear.x = lin_value
-                    self.move_cmd.angular.z = ang_value
+                if self.angular_only and self.target[2]!=None:
+			lin_value = 0
+		elif self.angular_only:
+			lin_value = lin_value/3
+            	self.move_cmd.linear.x = lin_value
+            	self.move_cmd.angular.z = ang_value
+		[lin_value,ang_value] = self.threshold(lin_value,ang_value)
+		#print(ang_value)
 
                 self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
@@ -154,13 +150,14 @@ class Control():
             if (f1 or f2) and self.data_ready:
                 self.lin_controller.enable(False)
                 self.ang_controller.enable(False)
+		self.flag1 = False
                 self.target_reached_pub.publish(True)
 		rospy.sleep(0.2)
             self.r.sleep()
 
 
     def controller_ready(self,input):
-        self.flag1 = self.lin_controller.ready and self.ang_controller.ready
+        self.flag1 = (self.lin_controller.ready and self.ang_controller.ready) or (self.ang_controller.ready and self.angular_only)
 
 
     ## Should be changed into a node with with a sub-callback function. For now just create an object of this class in main and use this method
@@ -212,6 +209,7 @@ class Control():
         ang = inc_dict['ang_pos']
 
 
+	
         if self.target[2]== None:
             self.target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
 
@@ -223,8 +221,7 @@ class Control():
             self.target_ang = pi_fix(self.target[2]-ang)
         self.data_ready = True
         ## angular movement only boolean
-        self.angular_only = True if (abs(self.target_ang)>0.17 or self.target[2]!=None) else False
-
+        self.angular_only = True if (abs(self.target_ang)>0.25 or self.target[2]!=None) else False
         self.lin_controller.new_state(self.target_lin)
         self.ang_controller.new_state(self.target_ang)
 

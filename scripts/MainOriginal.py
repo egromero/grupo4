@@ -6,7 +6,7 @@ import numpy as np
 
 from std_msgs.msg import String, Bool
 
-route = [[1,0,None],[0,0,None], [0,0,0]]
+route = [[0,0,np.pi/2],[0,0,np.pi/2],[0,0,np.pi/2],[0,0,np.pi/2]]
 
 class Turtlebot(object):
 	def __init__( self ):
@@ -14,6 +14,7 @@ class Turtlebot(object):
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
 		rospy.sleep( 0.2 )
 
+		self.reset_pub = rospy.Publisher('reset',Bool,queue_size=10)
 		rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
 		rospy.sleep( 0.2 )
 
@@ -27,8 +28,10 @@ class Turtlebot(object):
 			while not self.flag and not rospy.is_shutdown():
 				#print('Actual flag' ,self.flag)
 				self.r.sleep()
+                        rospy.sleep(0.1)
 	def target_reached_callback(self,data):
 		self.flag = data.data
+		self.reset_pub.publish(True)
 		print('incoming flag :',data.data)
 
 if __name__ == '__main__':

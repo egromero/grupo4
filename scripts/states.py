@@ -6,7 +6,7 @@ import json
 
 import rospy
 from nav_msgs.msg import Odometry
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 
 
 def process(data,zero = [0,0,0,0]):
@@ -42,6 +42,7 @@ class States():
 
 	    #rospy.init_node('states',anonymous = True)
         self.r = rospy.Rate(60);
+	rospy.Subscriber('reset',Bool,self.reset)
 	print('Creating states node...')
         while not rospy.is_shutdown():
             self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
@@ -51,7 +52,8 @@ class States():
             #self.writer.publish(state_write)
 	    #print('Posiciones : ',state_write)
             self.r.sleep()
-
+    def reset(self,data):
+        self.ref = True
 
     ##Odometry message read
     def Odom_read( self, odom_data ):
