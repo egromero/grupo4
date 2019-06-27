@@ -4,17 +4,6 @@ from data_to_image import *
 from particles import *
 from collections import Counter
 
-# before = "/Users/noemiisabocrosbyconget/Desktop/RoboticaMovil/grupo4/scripts/"
-path = 'Measures/'
-name = 'measures_29'
-sufix = '.txt'
-
-
-
-N = 800
-n_angles = 12
-sigma = 2
-
 
 
 

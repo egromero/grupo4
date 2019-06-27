@@ -34,16 +34,18 @@ class States():
         ##Writer Publisher
         self.writer = rospy.Publisher('write_permit',String,queue_size =10)
 
+        ##how much did one move publisher
+        self.moved_pub = rospy.Publisher('')
 
         ## Subscribe to odometry
         rospy.Subscriber( 'odom', Odometry, self.Odom_read)
         ## state publisher
         self.publisher = rospy.Publisher('our_state',String,queue_size =10)
-
+        self.change_pub = rospy.Publisher('state_change',String,queue_size =10)
 	    #rospy.init_node('states',anonymous = True)
         self.r = rospy.Rate(60);
-	rospy.Subscriber('reset',Bool,self.reset)
-	print('Creating states node...')
+        rospy.Subscriber('reset',Bool,self.reset)
+        print('Creating states node...')
         while not rospy.is_shutdown():
             self.state_dict = {'x':self.pos[0],'y':self.pos[1],'ang_pos':self.pos[3]}
             self.publisher.publish(json.dumps(self.state_dict))
@@ -53,6 +55,7 @@ class States():
 	    #print('Posiciones : ',state_write)
             self.r.sleep()
     def reset(self,data):
+        self.change_pub.publish(json.dumps(self.state_dict))
         self.ref = True
 
     ##Odometry message read

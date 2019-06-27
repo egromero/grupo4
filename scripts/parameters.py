@@ -4,6 +4,10 @@ name = 'measures_0'
 sufix = '.txt'
 
 
+N = 800
+n_angles = 12
+sigma = 2
+
 
 angles = [0,180]
 window = 60 # add and substract to limits of angles.
