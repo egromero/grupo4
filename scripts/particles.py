@@ -28,6 +28,8 @@ def get_weights(particles,cartesian_matrix,global_map,operation='ccoeff_norm'):
     if check_max:
         max = 0
     for i,particle in enumerate(particles):
+	if i%1000 == 0:
+ 	    print(i)
         coord,angle = particle
         y,x = coord
 
@@ -96,43 +98,6 @@ def desplazar_particulas(particles, mu_r,mu_ang):
         particle[1] += new_angle
     return np.array(particles)
 
-def get_position(sample, N, first_data=None):
-
-    if not first_data:
-        # get local map
-        tic = time.time()
-        cartesian_matrix = generate_cartesian_matrix(sample)
-        toc = time.time()-tic
-        print('Time for cartesian full matrix generation: ', toc)
-
-        # get global map
-        tic = time.time()
-        global_map = image_preprocess()
-        toc = time.time()-tic
-        print('Time for image preprocessing: ', toc)
-
-        # get original particles
-        particles = np.array(original_particle_gen(N, global_map))
-    else:
-        particles, cartesian_matrix, global_map = first_data
-
-    # get weights
-    tic = time.time()
-    weights = get_weights(particles, cartesian_matrix, global_map, 'ccoeff_norm')
-    weights = weights/np.sum(weights)
-    toc = time.time()-tic
-    print('Time for getting weight of all particles: ', toc)
-
-    # redistribute particles
-    tic = time.time()
-    particles = redistribute(particles, weights)
-    toc = time.time()-tic
-    print('Time for getting new distribution of all particles: ', toc)
-
-    # move bot and particles
-    particles = desplazar_particulas(particles, mu_ang, sigma_ang)
-
-    return
 
 
 """

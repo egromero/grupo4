@@ -137,13 +137,14 @@ class Control():
                 [lin_value,ang_value] = self.threshold(lin_value,ang_value)
             	self.move_cmd.linear.x = lin_value
             	self.move_cmd.angular.z = ang_value
-
+		#print(ang_value)
 
 		#print(lin_value)
 
                 self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
                 self.mover.publish(self.move_cmd)
+		self.flag1 = False
 
 
             ## Check if one should stop
@@ -177,7 +178,7 @@ class Control():
         self.lin_controller.enable(True)
         self.ang_controller.enable(True)
         self.active = True
-        print(self.target)
+        print('got new target : ' ,self.target)
 
 
 
@@ -215,6 +216,7 @@ class Control():
         x = inc_dict['x']
         y = inc_dict['y']
         ang = inc_dict['ang_pos']
+	#print(ang)
 
 
 
@@ -227,6 +229,7 @@ class Control():
         else:
             self.target_lin = 0
             self.target_ang = pi_fix(self.target[2]-ang)
+	#print(self.target_ang)
         self.data_ready = True
         ## angular movement only boolean
         self.angular_only = True if (abs(self.target_ang)>0.25 or self.target[2]!=None) else False

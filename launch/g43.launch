@@ -10,12 +10,15 @@
 
   <node name="ang_control" pkg="pid" type="controller" ns="ang_control">
     <param name="Kp" value="-0.9" />
-    <param name="Ki" value="-0.2" />
+    <param name="Ki" value="-0.01" />
     <param name="Kd" value="-0.01" />
-    <param name="windup_limit" value="0.03"/>
+    <param name="windup_limit" value="0.1"/>
   </node>
 
   <node pkg = "g43" type = "obstacle.py" name = "obstacle" output="screen">
+  </node>
+
+  <node pkg = "g43" type = "map_node.py" name = "map" output="screen">
   </node>
 
   <node pkg = "g43" type = "states.py" name = "states" output="screen">

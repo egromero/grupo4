@@ -19,6 +19,7 @@ def process(data,zero = [0,0,0,0]):
 #print('angaux2 = {}'.format(angaux2))
     new_ang = pi_fix(angaux2-zero[3])
 
+
     pos = [new_x,new_y,new_z,new_ang]
     return pos
 
@@ -34,8 +35,6 @@ class States():
         ##Writer Publisher
         self.writer = rospy.Publisher('write_permit',String,queue_size =10)
 
-        ##how much did one move publisher
-        self.moved_pub = rospy.Publisher('')
 
         ## Subscribe to odometry
         rospy.Subscriber( 'odom', Odometry, self.Odom_read)
@@ -55,6 +54,7 @@ class States():
 	    #print('Posiciones : ',state_write)
             self.r.sleep()
     def reset(self,data):
+	print('reset request')
         radius = np.sqrt(self.pos[0]**2+self.pos[1]**2)
         #pseudo_angle = np.arctan2(self.pos[1]/self.pos[0])
         ## use pseudo angle if more precision is desired

@@ -2,8 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import cv2
+import rospkg
 from parameters import *
 
+rospack = rospkg.RosPack()
+our_path = rospack.get_path('g43')
+our_path += '/scripts'
 
 
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
@@ -32,7 +36,7 @@ def remap(rmatrix,coords):
                 m2 = np.array([1-q2,q2])
                 m2.shape = (2,1)
                 mr = rmatrix[r1:r2+1,t1:t2+1]
-                output = m1@mr@m2
+                output = np.dot(np.dot(m1,mr),m2)
                 # if output[0]>0.5:
                 #     print(x,y)
                 #     print(r1,r2,t1,t2,q1,q2)
@@ -84,8 +88,10 @@ def generate_cartesian_matrix(data):
 ## Preprocess image for map matching
 def image_preprocess():
     global ratio,magic_number, gaussian_size
-    file = 'map.pgm'
-    img = cv2.imread(file,0)
+    file_name = our_path + '/map.pgm'
+    #print(file_name)
+    img = cv2.imread(file_name,0)
+ 
     ## change into 0-1 values
     img = (img == 0)*1 + (img==205)*nothing_value
 
