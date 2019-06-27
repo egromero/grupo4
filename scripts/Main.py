@@ -19,7 +19,7 @@ class Turtlebot(object):
 		## bad joke.
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
 		rospy.sleep( 0.2 )
-	
+
 		##
 		self.on_pub = rospy.Publisher('main_on',Bool,queue_size=1)
 		self.reset_pub = rospy.Publisher('reset',Bool,queue_size=10)
@@ -69,7 +69,7 @@ class Turtlebot(object):
 			while (not self.move_allowed_flag and not rospy.is_shutdown()):
 				self.r.sleep()
 			self.move_allowed_flag = False
-	
+
 
 	def image_callback(self,data):
 		self.image_flag = True
@@ -88,6 +88,17 @@ class Turtlebot(object):
 			print('changing angle due to obstacle')
 			## before ressetting the states, see how much did everyone move
 			self.reset_pub.publish(True)
+			self.send_data([0,0,0])
+
+			while (not self.move_allowed_flag and not rospy.is_shutdown()):
+				self.r.sleep()
+			self.move_allowed_flag = False
+
+			self.image_flag = False
+			self.image_take_pub.publish(True)
+			while not self.image_flag and not rospy.is_shutdown:
+				self.r.sleep()
+
 			self.send_data([0,0,np.pi/3])
 			self.flag = False
 			self.in_route = True

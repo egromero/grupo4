@@ -13,6 +13,7 @@ from particles import *
 
 class Map():
     def __init__(self):
+        self.f, (self.ax1,self.ax2) = plt.subplots(2)
         self.data = None
         self.new_data_flag = False
         self.take_data_flag = False
@@ -40,10 +41,11 @@ class Map():
         while not rospy.is_shutdown():
             while not self.new_data_flag:
                 rospy.sleep(1)
-	
+
             cartesian_matrix = generate_cartesian_matrix(self.data)
 	    print('cartesian matrix complete')
             self.new_data_flag = False
+            self.ax1.imshow(cartesian_matrix)
             weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
             self.particles = redistribute(self.particles,weights)
 	    print('weighting and redistribution complete')
@@ -75,7 +77,7 @@ class Map():
             y_mean = int(np.sum([particle[0][1]/length for particle in self.particles]))
             angle_mean = np.sum([(particle[1]-360)/len(self.particles) for particle in self.particles])
 	    print(x_mean,y_mean,angle_mean)
-            plt.imshow(copy_n)
+            self.ax2.imshow(copy_n)
             plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
             plt.show()
 
