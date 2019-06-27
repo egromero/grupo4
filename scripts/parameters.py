@@ -39,3 +39,6 @@ ang_thresh = 2/36*np.pi
 lin_speed = 0.2
 lin_acc = 0.08
 lin_stop = 0.05
+
+sigma_r = 0.04
+sigma_ang = 0.0277

@@ -4,6 +4,7 @@ from random import uniform
 import time
 from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center,nothing_value,threshold
 from corr_functions import *
+from parameters import *
 
 check_max = False
 
@@ -80,11 +81,16 @@ def redistribute(poses, p):
     # print(type(pre[0]))
     return poses[pre]
 
-def desplazar_particulas(particles, mu, sigma):
+def desplazar_particulas(particles, mu_r,mu_ang):
     for particle in particles:
-        new_angle = np.random.normal(mu, sigma, 1)[0]
-        r = np.random.normal(0, 0.1, 1)[0]
-        x_var, y_var = int(r*np.cos(new_angle)), int(r*np.sin(new_angle))
+        ## radial movement`
+        part_angle = particle[1]
+        new_radius = np.random.normal(mu_r, sigma_r*mu_r, 1)[0]
+        x_var, y_var = int(new_radius*np.cos(part_angle)), int(-new_radius*np.sin(part_angle))
+
+
+        ## angle movement`
+        new_angle = np.random.normal(mu_ang, sigma_ang*mu_ang, 1)[0]
 
         particle[0] = (particle[0][0] + x_var, particle[0][1] + y_var)
         particle[1] += new_angle

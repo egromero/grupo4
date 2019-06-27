@@ -27,7 +27,7 @@ class Map():
         ## take new data sub, and move particle data sub
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
         rospy.Subscriber('image_take',Bool,self.take_data)
-        rospy.Subscriber('image_data',String,self.move_particles)
+        rospy.Subscriber('state_change',String,self.move_particles)
 
         while not rospy.is_shutdown():
             while not self.new_data_flag:
@@ -42,7 +42,7 @@ class Map():
             while not self.move_data_flag:
                 rospy.sleep(1)
 
-            self.particles = desplazar_particulas(particles,60,sigma)
+            self.particles = desplazar_particulas(particles,self.data[0],self.data[1])
             self.move_data_flag = False
 
             self.show_image()

@@ -55,7 +55,12 @@ class States():
 	    #print('Posiciones : ',state_write)
             self.r.sleep()
     def reset(self,data):
-        self.change_pub.publish(json.dumps(self.state_dict))
+        radius = np.sqrt(self.pos[0]**2+self.pos[1]**2)
+        #pseudo_angle = np.arctan2(self.pos[1]/self.pos[0])
+        ## use pseudo angle if more precision is desired
+        angle = self.pos[3]
+        publish_item = [radius,angle]
+        self.change_pub.publish(json.dumps(publish_item))
         self.ref = True
 
     ##Odometry message read

@@ -33,7 +33,6 @@ class Turtlebot(object):
 
 		##Image taker pub and sub
 		self.image_take_pub= rospy.Publisher('image_take',Bool,queue_size=1)
-		self.image_data_pub = rospy.Publisher('image_data',String,queue_size=10)
 		rospy.Subscriber('image_done',Bool,self.image_callback)
 
 
