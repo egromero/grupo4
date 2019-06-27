@@ -13,8 +13,8 @@ from particles import *
 
 class Map():
     def __init__(self):
-        self.f, (self.ax1,self.ax2) = plt.subplots(2)
         self.data = None
+	self.move_data = None
         self.new_data_flag = False
         self.take_data_flag = False
 	self.on = False
@@ -39,13 +39,17 @@ class Map():
         rospy.Subscriber('state_change',String,self.move_particles)
 
         while not rospy.is_shutdown():
+	    
             while not self.new_data_flag:
                 rospy.sleep(1)
-
+	    print('got data')
             cartesian_matrix = generate_cartesian_matrix(self.data)
 	    print('cartesian matrix complete')
             self.new_data_flag = False
-            self.ax1.imshow(cartesian_matrix)
+	    print('pre_imshow1')
+	    plt.figure()
+            plt.imshow(cartesian_matrix)
+	    print('pre_weights')
             weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
             self.particles = redistribute(self.particles,weights)
 	    print('weighting and redistribution complete')
@@ -54,7 +58,7 @@ class Map():
             while not self.move_data_flag:
                 rospy.sleep(1)
 
-            self.particles = desplazar_particulas(self.particles,self.data[0],self.data[1])
+            self.particles = desplazar_particulas(self.particles,self.move_data[0],self.move_data[1])
             self.move_data_flag = False
 
             self.show_image()
@@ -75,9 +79,9 @@ class Map():
 	    length = float(len(self.particles))
             x_mean = int(np.sum([particle[0][0]/length for particle in self.particles]))
             y_mean = int(np.sum([particle[0][1]/length for particle in self.particles]))
-            angle_mean = np.sum([(particle[1]-360)/len(self.particles) for particle in self.particles])
-	    print(x_mean,y_mean,angle_mean)
-            self.ax2.imshow(copy_n)
+            angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
+	    plt.figure()
+	    plt.imshow(copy_n)
             plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
             plt.show()
 
@@ -91,7 +95,7 @@ class Map():
             self.take_data_flag = False
 
     def move_particles(self,data):
-        self.data = json.loads(data.data)
+        self.move_data = json.loads(data.data)
         self.move_data_flag = True
 
 

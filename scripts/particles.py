@@ -85,7 +85,7 @@ def redistribute(poses, p):
 
 def desplazar_particulas(particles, mu_r,mu_ang):
     print('mu\'s = :', mu_r, mu_ang)
-    print('sigma\'s = :' sigma_r*mu_r, sigma_ang*mu_ang )
+    print('sigma\'s = :', sigma_r*mu_r, sigma_ang*mu_ang )
     for particle in particles:
         ## radial movement`
         part_angle = particle[1]

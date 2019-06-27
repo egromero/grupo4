@@ -61,7 +61,7 @@ class Turtlebot(object):
 		while not rospy.is_shutdown():
 			self.image_flag = False
 			self.image_take_pub.publish(True)
-			while not self.image_flag:
+			while (not self.image_flag and not rospy.is_shutdown()):
 				self.r.sleep()
 
 			self.target_wait(repeat_route)

@@ -32,7 +32,7 @@ rate = 60
 
 ang_speed = 0.6
 ang_acc = 0.2
-ang_stop = 0.1
+ang_stop = 0.05
 ang_thresh = 2/36*np.pi
 
 
