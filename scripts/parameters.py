@@ -4,8 +4,8 @@ name = 'measures_0'
 sufix = '.txt'
 
 
-N = 800
-n_angles = 12
+N = 700
+n_angles = 10
 sigma = 2
 
 
@@ -26,12 +26,12 @@ threshold = 0.001
 
 rolled = 5
 
-obstacle_distance = 0.5
+obstacle_distance = 0.45
 
 rate = 60
 
-ang_speed = 0.6
-ang_acc = 0.2
+ang_speed = 0.9
+ang_acc = 0.25
 ang_stop = 0.05
 ang_thresh = 2/36*np.pi
 
@@ -40,5 +40,7 @@ lin_speed = 0.12
 lin_acc = 0.08
 lin_stop = 0.05
 
-sigma_r = 0.04
-sigma_ang = 0.0277
+sigma_r = 0.06
+sigma_ang = 0.0377
+
+

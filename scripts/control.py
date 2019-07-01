@@ -170,6 +170,10 @@ class Control():
     def enable_callback(self,data):
         input = data.data
         self.shutdown(input)
+	if not data:
+		self.move_cmd.linear.x = 0
+	    	self.move_cmd.angular.z = 0
+	        self.mover.publish(self.move_cmd)
         self.old_speed = [0,0]
 
     def controller_ready(self,input):

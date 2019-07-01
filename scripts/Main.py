@@ -15,6 +15,8 @@ class Turtlebot(object):
 		self.in_route = True
 		self.image_flag = False
 		self.move_allowed_flag = False
+		self.continuous_obstacle_flag1 = False
+		self.continuous_obstacle_flag2 = False
 
 		## bad joke.
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
@@ -72,9 +74,18 @@ class Turtlebot(object):
 			self.send_data(repeat_route)
 			self.in_route = False
 			self.flag = False
-			while not self.flag and not rospy.is_shutdown():
-				self.r.sleep()
-			self.in_route = True
+			while not rospy.is_shutdown():
+				while not self.flag and not rospy.is_shutdown():
+				    self.r.sleep()
+				self.in_route = True
+				print('waiting for another iteration of obstacle')
+				rospy.sleep(2)
+				if self.continuous_obstacle_flag2:
+				    self.in_route = False
+				else:
+				    break	
+	
+			print('out of loop')
 			rospy.sleep(2)
 			while (not self.move_allowed_flag and not rospy.is_shutdown()):
 				self.r.sleep()
@@ -93,28 +104,36 @@ class Turtlebot(object):
 
 	## reset the state and spin the robot
 	def obstacle_response(self,data):
-		if data.data:
-			pass
-			#print('obstacle in sight')
+		if self.absolute_obstacle_flag:
 		## abosulte flag ignores interruptions at the beginning (initial spin)
-		if (data.data and not self.in_route) and self.absolute_obstacle_flag:
-			print('changing angle due to obstacle')
-			## before ressetting the states, see how much did everyone move
-			self.control_pub.publish(False)
-			print('Controller shut down')
-			self.reset_pub.publish(True)	
+			if (data.data and not self.in_route):
+				print('changing angle due to obstacle')
+				## before ressetting the states, see how much did everyone move
+				self.control_pub.publish(False)
+				print('Controller shut down')
+				self.reset_pub.publish(True)	
 	
-			while (not self.move_allowed_flag and not rospy.is_shutdown()):
-				self.r.sleep()
-			self.move_allowed_flag = False	
+				while (not self.move_allowed_flag and not rospy.is_shutdown()):
+					self.r.sleep()
+				self.move_allowed_flag = False	
 
 
-			self.image_flag = False
-			self.image_take_pub.publish(True)
-			while not self.image_flag and not rospy.is_shutdown:
-				self.r.sleep()
-			self.send_data([0,0,np.pi/6])
-			self.control_pub.publish(True)
+				self.image_flag = False
+				self.image_take_pub.publish(True)
+				while not self.image_flag and not rospy.is_shutdown:
+					self.r.sleep()
+				self.send_data([0,0,np.pi/4])
+				self.control_pub.publish(True)
+				self.continuous_obstacle_flag1 = True
+			elif (self.continuous_obstacle_flag1 and data.data):	
+				print('continuous obstacle')
+				self.continuous_obstacle_flag1 = False
+				self.continuous_obstacle_flag2 = True
+			elif (self.continuous_obstacle_flag1 and not data.data):
+				self.continuous_obstacle_flag1 = False
+				self.continuous_obstacle_flag2 = False
+			
+
 
 	def move_allowed_callback(self,data):
 	    self.move_allowed_flag = True
