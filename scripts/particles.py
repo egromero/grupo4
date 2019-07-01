@@ -7,9 +7,16 @@ from corr_functions import *
 from parameters import *
 
 check_max = False
+posible_locations = None
+
+def in_map(particle, map):
+    coords, angle = particle
+    if coords in map:
+        return True
 
 
 def original_particles_gen(N,n_angles,image):
+    global posible_locations
     angles = [360*i/n_angles for i in range(n_angles)]
     rows,cols = image.shape
     image_vector = image.reshape(1,rows*cols)
