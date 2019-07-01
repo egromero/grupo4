@@ -31,12 +31,12 @@ class Map():
         ## Process map and initial particles, and then send flag for initial movements
     	while (not self.on and not rospy.is_shutdown()):
     	    rospy.sleep(1)
-            tic = time.time()
-            self.global_map = image_preprocess()
-            self.particles = original_particles_gen(N,n_angles,self.global_map)
-            toc = time.time()-tic
-            print('Time for image preprocessing + origin particles: ',toc)
-            self.image_done_pub.publish(True)
+        tic = time.time()
+        self.global_map = image_preprocess()
+        self.particles = original_particles_gen(N,n_angles,self.global_map)
+        toc = time.time()-tic
+        print('Time for image preprocessing + origin particles: ',toc)
+        self.image_done_pub.publish(True)
 
 
 
