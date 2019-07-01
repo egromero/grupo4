@@ -89,7 +89,7 @@ def desplazar_particulas(particles, mu_r,mu_ang):
     for particle in particles:
         ## radial movement`
         part_angle = particle[1]
-        new_radius = np.random.normal(mu_r, sigma_r*mu_r, 1)[0]
+        new_radius = np.random.normal(mu_r, sigma_r*mu_r, 1)[0] / resolution
         x_var, y_var = int(new_radius*np.cos(part_angle)), int(-new_radius*np.sin(part_angle))
 
 
