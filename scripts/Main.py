@@ -34,6 +34,10 @@ class Turtlebot(object):
 		rospy.Subscriber('image_done',Bool,self.image_callback)
 		rospy.Subscriber('move_allowed',Bool,self.move_allowed_callback)
 
+		#control enabler/disabler publisher.
+		self.control_pub = rospy.Publisher('control_enable',Bool,queue_size=1)
+
+
 
 
 		self.r = rospy.Rate(5)
@@ -87,9 +91,7 @@ class Turtlebot(object):
 		if (data.data and not self.in_route) and self.absolute_obstacle_flag:
 			print('changing angle due to obstacle')
 			## before ressetting the states, see how much did everyone move
-			self.reset_pub.publish(True)
-			self.send_data([0,0,0])
-
+			self.control_pub(False)
 			while (not self.move_allowed_flag and not rospy.is_shutdown()):
 				self.r.sleep()
 			self.move_allowed_flag = False
@@ -98,7 +100,7 @@ class Turtlebot(object):
 			self.image_take_pub.publish(True)
 			while not self.image_flag and not rospy.is_shutdown:
 				self.r.sleep()
-
+			self.control_pub(True)
 			self.send_data([0,0,np.pi/3])
 			self.flag = False
 			self.in_route = True

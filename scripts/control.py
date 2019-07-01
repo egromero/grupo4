@@ -118,6 +118,10 @@ class Control():
         rospy.Subscriber('our_state',String,self.get_state)
         rospy.sleep( 0.2 )
 
+
+        ## shutdown subscriber
+        rospy.Subscriber('control_enable',Bool,self.enable_callback)
+
 	## data ready subscriber
         rospy.Subscriber('/lin_control/ready',Bool,self.controller_ready)
         rospy.Subscriber('/ang_control/ready',Bool,self.controller_ready)
@@ -156,12 +160,16 @@ class Control():
         	    self.target_reached_pub.publish(True)
             self.r.sleep()
 
-    def shutdown(self):
-        self.lin_controller.enable(False)
-        self.ang_controller.enable(False)
+    def shutdown(self,flag = False):
+        self.lin_controller.enable(flag)
+        self.ang_controller.enable(flag)
         self.flag1 = False
-        self.active = False
+        self.active = flag
         rospy.sleep(0.2)
+
+    def enable_callback(self,data):
+        input = data.data
+        self.shutdown(input)
 
     def controller_ready(self,input):
         self.flag1 = (self.lin_controller.ready and self.ang_controller.ready) or (self.ang_controller.ready and self.angular_only)
