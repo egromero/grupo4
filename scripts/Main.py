@@ -94,25 +94,28 @@ class Turtlebot(object):
 	## reset the state and spin the robot
 	def obstacle_response(self,data):
 		if data.data:
-			print('obstacle in sight')
+			pass
+			#print('obstacle in sight')
 		## abosulte flag ignores interruptions at the beginning (initial spin)
 		if (data.data and not self.in_route) and self.absolute_obstacle_flag:
 			print('changing angle due to obstacle')
 			## before ressetting the states, see how much did everyone move
 			self.control_pub.publish(False)
-			self.reset_pub.publish(True)			
+			print('Controller shut down')
+			self.reset_pub.publish(True)	
+	
 			while (not self.move_allowed_flag and not rospy.is_shutdown()):
 				self.r.sleep()
-			self.move_allowed_flag = False
+			self.move_allowed_flag = False	
+
 
 			self.image_flag = False
 			self.image_take_pub.publish(True)
 			while not self.image_flag and not rospy.is_shutdown:
 				self.r.sleep()
-			self.control_pub.publish(True)
 			self.send_data([0,0,np.pi/6])
-			self.flag = False
-			self.in_route = True
+			self.control_pub.publish(True)
+
 	def move_allowed_callback(self,data):
 	    self.move_allowed_flag = True
 

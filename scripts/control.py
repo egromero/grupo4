@@ -170,6 +170,7 @@ class Control():
     def enable_callback(self,data):
         input = data.data
         self.shutdown(input)
+        self.old_speed = [0,0]
 
     def controller_ready(self,input):
         self.flag1 = (self.lin_controller.ready and self.ang_controller.ready) or (self.ang_controller.ready and self.angular_only)
