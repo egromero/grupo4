@@ -7,9 +7,16 @@ from corr_functions import *
 from parameters import *
 
 check_max = False
+posible_locations = None
+
+def in_map(particle, map):
+    coords, angle = particle
+    if coords in map:
+        return True
 
 
 def original_particles_gen(N,n_angles,image):
+    global posible_locations
     angles = [360*i/n_angles for i in range(n_angles)]
     rows,cols = image.shape
     image_vector = image.reshape(1,rows*cols)
@@ -33,17 +40,21 @@ def get_weights(particles,cartesian_matrix,global_map,operation='ccoeff_norm'):
         coord,angle = particle
         y,x = coord
 
-        ## new matrix is what the robot 'sees' given an angle
-        new_matrix, new_center = rotate_and_center(cartesian_matrix,angle)
-        rows,cols = new_matrix.shape
+        if in_map(particle, posible_locations):
+            ## new matrix is what the robot 'sees' given an angle
+            new_matrix, new_center = rotate_and_center(cartesian_matrix,angle)
+            rows,cols = new_matrix.shape
 
-        ## fake center reprecents the [0,0] of the window
-        fake_center = (y-new_center[0],x-new_center[1])
+            ## fake center reprecents the [0,0] of the window
+            fake_center = (y-new_center[0],x-new_center[1])
 
-        ##window is the matching part of global map to what the robot sees given an angle.
-        window = global_map[fake_center[0]:fake_center[0]+rows,fake_center[1]:fake_center[1]+cols]
-        ## correlation calculacion
-        w = matrix_corr(window,new_matrix,operation)
+            ##window is the matching part of global map to what the robot sees given an angle.
+            window = global_map[fake_center[0]:fake_center[0]+rows,fake_center[1]:fake_center[1]+cols]
+            ## correlation calculacion
+            w = matrix_corr(window,new_matrix,operation)
+        else:
+            w = 0
+
         weights[i] = w
 
 
