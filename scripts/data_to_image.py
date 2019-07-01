@@ -25,7 +25,7 @@ def remap(rmatrix,coords):
         return nothing_value
     else:
         try:
-            theta = (np.arctan2(y,x)+np.pi/2)*360/(2*np.pi)
+            theta = (np.arctan2(-y,x)+np.pi/2)*360/(2*np.pi)
             # print(theta)
             if valid[0]<theta<valid[1]:  #bIlineal interpolation
                 radius_index = radius/resolution
@@ -91,7 +91,7 @@ def image_preprocess():
     file_name = our_path + '/map.pgm'
     #print(file_name)
     img = cv2.imread(file_name,0)
- 
+
     ## change into 0-1 values
     img = (img == 0)*1 + (img==205)*nothing_value
 

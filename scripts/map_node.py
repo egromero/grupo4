@@ -14,45 +14,46 @@ from particles import *
 class Map():
     def __init__(self):
         self.data = None
-	self.move_data = None
+        self.move_data = None
         self.new_data_flag = False
         self.take_data_flag = False
-	self.on = False
+        self.on = False
         self.move_data_flag = False
         self.image_done_pub = rospy.Publisher('image_done',Bool,queue_size = 1)
-	rospy.Subscriber('main_on',Bool,self.on_callback)
+        rospy.Subscriber('main_on',Bool,self.on_callback)
         self.move_allowed_pub = rospy.Publisher('move_allowed',Bool,queue_size=1)
-
-        ## Process map and initial particles, and then send flag for initial movements
-	while (not self.on and not rospy.is_shutdown()):
-	    rospy.sleep(1)
-        tic = time.time()
-        self.global_map = image_preprocess()
-        self.particles = original_particles_gen(N,n_angles,self.global_map)
-        toc = time.time()-tic
-        print('Time for image preprocessing + origin particles: ',toc)
-        self.image_done_pub.publish(True)
 
         ## take new data sub, and move particle data sub
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
         rospy.Subscriber('image_take',Bool,self.take_data)
         rospy.Subscriber('state_change',String,self.move_particles)
 
+        ## Process map and initial particles, and then send flag for initial movements
+    	while (not self.on and not rospy.is_shutdown()):
+    	    rospy.sleep(1)
+            tic = time.time()
+            self.global_map = image_preprocess()
+            self.particles = original_particles_gen(N,n_angles,self.global_map)
+            toc = time.time()-tic
+            print('Time for image preprocessing + origin particles: ',toc)
+            self.image_done_pub.publish(True)
+
+
+
         while not rospy.is_shutdown():
-	    
             while not self.new_data_flag:
                 rospy.sleep(1)
-	    print('got data')
+            print('got data')
             cartesian_matrix = generate_cartesian_matrix(self.data)
-	    print('cartesian matrix complete')
+            print('cartesian matrix complete')
             self.new_data_flag = False
-	    print('pre_imshow1')
-	    plt.figure()
+            print('pre_imshow1')
+            plt.figure()
             plt.imshow(cartesian_matrix)
-	    print('pre_weights')
+            print('pre_weights')
             weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
             self.particles = redistribute(self.particles,weights)
-	    print('weighting and redistribution complete')
+            print('weighting and redistribution complete')
             self.image_done_pub.publish(True)
 
             while not self.move_data_flag:
@@ -62,7 +63,7 @@ class Map():
             self.move_data_flag = False
 
             self.show_image()
-	    self.move_allowed_pub.publish(True)
+            self.move_allowed_pub.publish(True)
     def on_callback(self,data):
 	self.on = True
 
