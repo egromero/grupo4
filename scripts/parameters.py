@@ -36,7 +36,7 @@ ang_stop = 0.05
 ang_thresh = 2/36*np.pi
 
 
-lin_speed = 0.2
+lin_speed = 0.12
 lin_acc = 0.08
 lin_stop = 0.05
 

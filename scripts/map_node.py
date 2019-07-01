@@ -94,6 +94,7 @@ class Map():
             self.data = laserScan.ranges
             self.new_data_flag = True
             self.take_data_flag = False
+            self.image_done_pub.publish(True)
 
     def move_particles(self,data):
         self.move_data = json.loads(data.data)

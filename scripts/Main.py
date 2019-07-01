@@ -12,7 +12,7 @@ class Turtlebot(object):
 	def __init__( self ):
 		self.flag = True
 		self.absolute_obstacle_flag = False
-		self.in_route = False
+		self.in_route = True
 		self.image_flag = False
 		self.move_allowed_flag = False
 
@@ -46,19 +46,19 @@ class Turtlebot(object):
 		while (not self.image_flag and not rospy.is_shutdown()):
 			self.r.sleep()
 		## initial 360 degree spin with data
-		for i in range(6):
+		#for i in range(6):
 			## take image and wait
-			self.image_flag = False
-			self.image_take_pub.publish(True)
-			while not self.image_flag and not rospy.is_shutdown:
-				self.r.sleep()
+			#self.image_flag = False
+			#self.image_take_pub.publish(True)
+			#while not self.image_flag and not rospy.is_shutdown:
+			#	self.r.sleep()
 			## image done? move and send movement data to map node
-			self.target_wait(initial_route)
-			print('route_done')
+			#self.target_wait(initial_route)
+			#print('route_done')
 
-			while (not self.move_allowed_flag and not rospy.is_shutdown()):
-				self.r.sleep()
-			self.move_allowed_flag = False
+			#while (not self.move_allowed_flag and not rospy.is_shutdown()):
+			#	self.r.sleep()
+			#self.move_allowed_flag = False
 
 
 		self.absolute_obstacle_flag = True
@@ -68,8 +68,14 @@ class Turtlebot(object):
 			while (not self.image_flag and not rospy.is_shutdown()):
 				self.r.sleep()
 
-			self.target_wait(repeat_route)
+
+			self.send_data(repeat_route)
 			self.in_route = False
+			self.flag = False
+			while not self.flag and not rospy.is_shutdown():
+				self.r.sleep()
+			self.in_route = True
+			rospy.sleep(2)
 			while (not self.move_allowed_flag and not rospy.is_shutdown()):
 				self.r.sleep()
 			self.move_allowed_flag = False
@@ -87,11 +93,14 @@ class Turtlebot(object):
 
 	## reset the state and spin the robot
 	def obstacle_response(self,data):
+		if data.data:
+			print('obstacle in sight')
 		## abosulte flag ignores interruptions at the beginning (initial spin)
 		if (data.data and not self.in_route) and self.absolute_obstacle_flag:
 			print('changing angle due to obstacle')
 			## before ressetting the states, see how much did everyone move
-			self.control_pub(False)
+			self.control_pub.publish(False)
+			self.reset_pub.publish(True)			
 			while (not self.move_allowed_flag and not rospy.is_shutdown()):
 				self.r.sleep()
 			self.move_allowed_flag = False
@@ -100,8 +109,8 @@ class Turtlebot(object):
 			self.image_take_pub.publish(True)
 			while not self.image_flag and not rospy.is_shutdown:
 				self.r.sleep()
-			self.control_pub(True)
-			self.send_data([0,0,np.pi/3])
+			self.control_pub.publish(True)
+			self.send_data([0,0,np.pi/6])
 			self.flag = False
 			self.in_route = True
 	def move_allowed_callback(self,data):
@@ -113,6 +122,7 @@ class Turtlebot(object):
 		while not self.flag and not rospy.is_shutdown():
 			#print('Actual flag' ,self.flag)
 			self.r.sleep()
+		self.in_route = True
 		rospy.sleep(2)
 
 	def target_reached_callback(self,data):
