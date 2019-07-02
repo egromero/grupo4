@@ -33,7 +33,7 @@ class Map():
     	    rospy.sleep(1)
         tic = time.time()
         self.global_map = image_preprocess()
-        self.particles = original_particles_gen(N,n_angles,self.global_map)
+        self.particles = original_particles_gen(N,n_angles,self.global_map,initial_pos)
         toc = time.time()-tic
         print('Time for image preprocessing + origin particles: ',toc)
         self.image_done_pub.publish(True)
@@ -58,8 +58,9 @@ class Map():
 
             while not self.move_data_flag:
                 rospy.sleep(1)
+	    
+            self.particles = desplazar_particulas(self.particles,self.move_data[0],self.move_data[1]*360/(2*np.pi))
 
-            self.particles = desplazar_particulas(self.particles,self.move_data[0],self.move_data[1])
             self.move_data_flag = False
 
             self.show_image()
@@ -98,6 +99,7 @@ class Map():
 
     def move_particles(self,data):
         self.move_data = json.loads(data.data)
+	print('recieve data :'  ,self.move_data)
         self.move_data_flag = True
 
 

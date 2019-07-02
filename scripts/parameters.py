@@ -4,15 +4,18 @@ name = 'measures_0'
 sufix = '.txt'
 
 
-N = 600
-n_angles = 10
-sigma = 2
+check_max = False
 
+N = 300
+n_angles = 12
+sigma = 2
+initial_pos = [150,150]
+radio = 30
 
 angles = [0,180]
 window = 65 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
-max_r = 3 # max distance, set by sensor
+max_r = 2.5 # max distance, set by sensor
 resolution = 0.02 # resolution of generated image, lower value (more res) = more time expensive
 original_res = 0.1
 ratio = original_res/resolution
