@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import numpy as np
+from scipy import spatial
 import matplotlib.pyplot as plt
 import json
 
@@ -9,6 +10,9 @@ from std_msgs.msg import Bool,String
 from data_to_image import *
 from particles import *
 
+
+percent = 0.8
+r = 50
 
 
 class Map():
@@ -56,9 +60,13 @@ class Map():
             print('weighting and redistribution complete')
             self.image_done_pub.publish(True)
 
+            if self.found_place(self.particles, r):
+                self.show_image()
+                break
+
             while not self.move_data_flag:
                 rospy.sleep(1)
-	    
+
             self.particles = desplazar_particulas(self.particles,self.move_data[0],self.move_data[1]*360/(2*np.pi))
 
             self.move_data_flag = False
@@ -68,6 +76,16 @@ class Map():
     def on_callback(self,data):
 	self.on = True
 
+    def found_place(self, particles, radio):
+        x_mean = np.sum([coords[1]/len(particles) for [coords,angle] in particles])
+        y_mean = np.sum([coords[0]/len(particles) for [coords,angle] in particles])
+        pos_mean = (y_mean, x_mean)
+
+        tree = spatial.KDTree(particles)
+        in_place = tree.query_ball_point(pos_mean, radio)
+
+        if len(in_place)/len(particles) >= percent:
+            return True
 
     def show_image(self):
             copy_n = np.copy(self.global_map)
