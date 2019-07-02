@@ -80,8 +80,9 @@ class Map():
         x_mean = np.sum([coords[1]/len(particles) for [coords,angle] in particles])
         y_mean = np.sum([coords[0]/len(particles) for [coords,angle] in particles])
         pos_mean = (y_mean, x_mean)
+        coords = [coord for coord, angle in particles]
 
-        tree = spatial.KDTree(particles)
+        tree = spatial.KDTree(coords)
         in_place = tree.query_ball_point(pos_mean, radio)
 
         if len(in_place)/len(particles) >= percent:
