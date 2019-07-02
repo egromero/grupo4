@@ -59,7 +59,6 @@ def generate_radial_matrix(data):
     radial_vector = np.arange(0,max_r+resolution,resolution)
     radial_matrix = np.zeros([magic_number+1,angles[1]-angles[0]+1])
 
-
     for i in range(angles[1]-angles[0]+1):
         binary_vector = radial_vector>data[i]
         rolled_vector = np.roll(binary_vector,3)
@@ -116,8 +115,6 @@ def image_preprocess():
 def rotate_and_center(inc_matrix,angle):
     global magic_number
 
-
-
     ## Reduce cartsian matrix
     rows,cols = inc_matrix.shape
     M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
@@ -126,7 +123,6 @@ def rotate_and_center(inc_matrix,angle):
     if gaussian_flag:
         inc_matrix = cv2.GaussianBlur(inc_matrix,(gaussian_size,gaussian_size),0)
 
-    #
     # plt.imshow(inc_matrix)
     # plt.show()
 

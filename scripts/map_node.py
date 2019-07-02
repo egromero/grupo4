@@ -35,14 +35,13 @@ class Map():
         ## Process map and initial particles, and then send flag for initial movements
     	while (not self.on and not rospy.is_shutdown()):
     	    rospy.sleep(1)
+
         tic = time.time()
         self.global_map = image_preprocess()
         self.particles = original_particles_gen(N,n_angles,self.global_map,initial_pos)
         toc = time.time()-tic
         print('Time for image preprocessing + origin particles: ',toc)
         self.image_done_pub.publish(True)
-
-
 
         while not rospy.is_shutdown():
             while not self.new_data_flag:
@@ -73,8 +72,9 @@ class Map():
 
             self.show_image()
             self.move_allowed_pub.publish(True)
+
     def on_callback(self,data):
-	self.on = True
+        self.on = True
 
     def found_place(self, particles, radio):
         x_mean = np.sum([coords[1]/len(particles) for [coords,angle] in particles])
@@ -88,22 +88,22 @@ class Map():
             return True
 
     def show_image(self):
-            copy_n = np.copy(self.global_map)
+        copy_n = np.copy(self.global_map)
 	    #x_mean = 0
 	    #y_mean = 0
 	    #angle_mean = 0
 	    #length = len(self.particles)
-            for particle in self.particles:
-                copy_n[particle[0][0],particle[0][1]] = 2
+        for particle in self.particles:
+            copy_n[particle[0][0],particle[0][1]] = 2
 		#x_mean+= particle[0][0]/lenght
 	    length = float(len(self.particles))
-            x_mean = int(np.sum([particle[0][1]/length for particle in self.particles]))
-            y_mean = int(np.sum([particle[0][0]/length for particle in self.particles]))
-            angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
+        x_mean = int(np.sum([particle[0][1]/length for particle in self.particles]))
+        y_mean = int(np.sum([particle[0][0]/length for particle in self.particles]))
+        angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
 	    plt.figure()
 	    plt.imshow(copy_n)
-            plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
-            plt.show()
+        plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
+        plt.show()
 
     def take_data(self,data):
         self.take_data_flag = True
@@ -117,7 +117,7 @@ class Map():
 
     def move_particles(self,data):
         self.move_data = json.loads(data.data)
-	print('recieve data :'  ,self.move_data)
+	    print('recieve data :'  ,self.move_data)
         self.move_data_flag = True
 
 

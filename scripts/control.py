@@ -29,12 +29,12 @@ class Generic_Controller():
         ## Enable publisher (publishes to enable or disable controller)
         self.enable_pub = rospy.Publisher('/'+directory+'/pid_enable',Bool,queue_size=10)
         while self.enable_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-           rospy.sleep( 0.2 )
+            rospy.sleep( 0.2 )
 
         ## Ready publisher (publishes to change a flag - interrupt like working instead of polling)
         self.ready_pub = rospy.Publisher('/'+directory+'/ready',Bool,queue_size=10)
         while self.enable_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-           rospy.sleep( 0.2 )
+            rospy.sleep( 0.2 )
 
 
     	## publish current state to controller
@@ -44,8 +44,6 @@ class Generic_Controller():
 
     	## Creates subscriber that recieves output once ready
         rospy.Subscriber( '/'+directory+'/control_effort', Float64, self.response )
-
-
 
 
         #Inicializacion de target = 0
@@ -81,8 +79,6 @@ class Control():
         self.target = [0,0,None]
         self.target_list=  []
 
-
-
         ##odom subs
         self.flag1 = False
         self.old_speed = [0,0]
@@ -91,13 +87,10 @@ class Control():
         ##booleans for applying speed
         self.angular_only = False
 
-
         ## linear and angular controllers
         print('creating controllers')
         self.lin_controller = Generic_Controller('lin_control')
         self.ang_controller = Generic_Controller('ang_control')
-
-
 
         ##Movement publisher and message
         print('Creating movement publisher')
@@ -105,7 +98,7 @@ class Control():
         self.move_cmd = Twist()
         self.r = rospy.Rate(self.rate)
 
-	##Controller ready publisher and controller setpoint sub
+	    ##Controller ready publisher and controller setpoint sub
         self.target_reached_pub = rospy.Publisher('target_reached',Bool,queue_size=10)
         rospy.sleep( 0.2 )
 
@@ -118,14 +111,12 @@ class Control():
         rospy.Subscriber('our_state',String,self.get_state)
         rospy.sleep( 0.2 )
 
-
         ## shutdown subscriber
         rospy.Subscriber('control_enable',Bool,self.enable_callback)
 
-	## data ready subscriber
+	    ## data ready subscriber
         rospy.Subscriber('/lin_control/ready',Bool,self.controller_ready)
         rospy.Subscriber('/ang_control/ready',Bool,self.controller_ready)
-
 
         self.timer = Timer()
         self.timer.reset()
@@ -141,25 +132,23 @@ class Control():
                 [lin_value,ang_value] = self.threshold(lin_value,ang_value)
             	self.move_cmd.linear.x = lin_value*self.active
             	self.move_cmd.angular.z = ang_value*self.active
-		#print(ang_value)
-
-		#print(lin_value)
+        		#print(ang_value)
+        		#print(lin_value)
 
                 self.old_speed = [lin_value,ang_value]
                 #self.writer.publish('Actuacion(lineal,angular) = {},{}'.format(lin_value,ang_value))
                 self.mover.publish(self.move_cmd)
-		self.flag1 = False
+                self.flag1 = False
 
 
             ## Check if one should stop
-	    if self.active:
+            if self.active:
             	f1 = (abs(self.target_lin)<self.stop_dict['linear'] and self.target[2]==None)
             	f2 =  (self.target[2]!=None and abs(self.target_ang)<self.stop_dict['angular'])
             	if (f1 or f2) and self.data_ready:
                     self.shutdown()
         	    self.target_reached_pub.publish(True)
 
-		
             self.r.sleep()
 
     def shutdown(self,flag = False):
@@ -171,13 +160,13 @@ class Control():
 
     def enable_callback(self,data):
         incoming = data.data
-	if not incoming:
-		print('shutting down')
-		self.move_cmd.linear.x = 0
+    	if not incoming:
+    		print('shutting down')
+    		self.move_cmd.linear.x = 0
 	    	self.move_cmd.angular.z = 0
 	        self.mover.publish(self.move_cmd)
-        self.shutdown(incoming)
-        self.old_speed = [0,0]
+            self.shutdown(incoming)
+            self.old_speed = [0,0]
 
     def controller_ready(self,input):
         self.flag1 = (self.lin_controller.ready and self.ang_controller.ready) or (self.ang_controller.ready and self.angular_only)
@@ -217,7 +206,6 @@ class Control():
         lin_val = lin_val if abs(lin_accel)<lin_aclimit else old_lin_val+ np.sign(lin_accel)*lin_aclimit*time_delta
         ang_val = ang_val if abs(ang_accel)<ang_aclimit else old_ang_val+ np.sign(ang_accel)*ang_aclimit*time_delta
 
-
         ## Max velocity check
         lin_val = lin_val if abs(lin_val)<lin_splimit else lin_splimit*np.sign(lin_val)
 
@@ -232,20 +220,18 @@ class Control():
         x = inc_dict['x']
         y = inc_dict['y']
         ang = inc_dict['ang_pos']
-	#print(ang)
-
-
+        #print(ang)
 
         if self.target[2]== None:
             self.target_lin = np.sqrt(np.power(self.target[0]-x,2) +np.power(self.target[1]-y,2))
 
-                	## desired angle - actual angle
+            ## desired angle - actual angle
             self.target_ang = pi_fix(np.arctan2((self.target[1]-y),(self.target[0]-x))-ang)
-        		#np.arctan2((self.target[1]-y),(self.target[0]-x))
+        	#np.arctan2((self.target[1]-y),(self.target[0]-x))
         else:
             self.target_lin = 0
             self.target_ang = pi_fix(self.target[2]-ang)
-	#print(self.target_ang)
+	    #print(self.target_ang)
         self.data_ready = True
         ## angular movement only boolean
         self.angular_only = True if (abs(self.target_ang)>0.25 or self.target[2]!=None) else False

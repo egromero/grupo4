@@ -3,8 +3,9 @@ import rospy
 import json
 import numpy as np
 from parameters import *
-
 from std_msgs.msg import String, Bool
+
+
 initial_route = [0,0,np.pi/3]
 repeat_route = [0.5,0,None]
 
@@ -16,12 +17,10 @@ class Turtlebot(object):
 		self.image_flag = False
 		self.move_allowed_flag = False
 
-
 		## bad joke.
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
 		rospy.sleep( 0.2 )
 
-		##
 		self.on_pub = rospy.Publisher('main_on',Bool,queue_size=1)
 		self.reset_pub = rospy.Publisher('reset',Bool,queue_size=10)
 		rospy.Subscriber('target_reached',Bool,self.target_reached_callback)
@@ -38,14 +37,13 @@ class Turtlebot(object):
 		#control enabler/disabler publisher.
 		self.control_pub = rospy.Publisher('control_enable',Bool,queue_size=1)
 
-
-
-
 		self.r = rospy.Rate(5)
 		## wait for map and initial particles
 		self.on_pub.publish(True)
+
 		while (not self.image_flag and not rospy.is_shutdown()):
 			self.r.sleep()
+
 		## initial 360 degree spin with data
 		#for i in range(6):
 			## take image and wait
@@ -61,7 +59,6 @@ class Turtlebot(object):
 		#		self.r.sleep()
 		#	self.move_allowed_flag = False
 
-
 		self.absolute_obstacle_flag = True
 		while not rospy.is_shutdown():
 			self.image_flag = False
@@ -70,8 +67,7 @@ class Turtlebot(object):
 				self.r.sleep()
 
 			route = repeat_route if not self.obstacle else [0,0,np.pi/4]
-			
-				
+
 			self.send_data(route)
 			self.flag = False
 			while not self.flag and not rospy.is_shutdown():
@@ -81,7 +77,6 @@ class Turtlebot(object):
 			while (not self.move_allowed_flag and not rospy.is_shutdown()):
 				self.r.sleep()
 			self.move_allowed_flag = False
-
 
 	def image_callback(self,data):
 		self.image_flag = True
@@ -95,7 +90,7 @@ class Turtlebot(object):
 
 	## reset the state and spin the robot
 	def obstacle_response(self,data):
-		if self.absolute_obstacle_flag:	
+		if self.absolute_obstacle_flag:
 		## abosulte flag ignores interruptions at the beginning (initial spin)
 			if (data.data and not self.obstacle):
 				self.obstacle = True
@@ -103,8 +98,8 @@ class Turtlebot(object):
 				## before ressetting the states, see how much did everyone move
 				self.control_pub.publish(False)
 				print('Controller shut down')
-				self.reset_pub.publish(True)	
-	
+				self.reset_pub.publish(True)
+
 				while (not self.move_allowed_flag and not rospy.is_shutdown()):
 					self.r.sleep()
 				self.move_allowed_flag = False
@@ -117,8 +112,6 @@ class Turtlebot(object):
 				self.send_data([0,0,np.pi/4])
 			elif not data.data and self.obstacle:
 				self.obstacle = False
-
-
 
 	def move_allowed_callback(self,data):
 	    self.move_allowed_flag = True

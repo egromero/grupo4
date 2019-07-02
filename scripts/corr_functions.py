@@ -1,4 +1,5 @@
 import numpy as np
+
 def norm(m1,m2):
     m1_sum = np.sum(m1**2)
     m2_sum = np.sum(m2**2)
@@ -42,4 +43,4 @@ def matrix_corr(m1,m2,operation='ccoeff_norm'):
         alpha =  function_dict[operation](m1,m2)
         return 0 if np.isnan(alpha) else alpha
     except ValueError:
-	return 0
+        return 0

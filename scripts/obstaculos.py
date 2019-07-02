@@ -29,12 +29,13 @@ class DetectorObstaculos(object):
 		if self.obstacle:
 			self.calculate_route()
 			# print('obstacle')
+
 	def data_received(self, data):
 		## Odometry callback for rerouting planning
 		inc_dict = json.loads(data.data)
-        	self.x = inc_dict['x']
-        	self.y = inc_dict['y']
-       		self.ang = inc_dict['ang_pos']
+		self.x = inc_dict['x']
+		self.y = inc_dict['y']
+		self.ang = inc_dict['ang_pos']
 
 	def calculate_route(self):
 		## Create rot rot_matrix
