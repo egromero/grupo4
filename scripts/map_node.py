@@ -9,10 +9,10 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Bool,String
 from data_to_image import *
 from particles import *
+from parameters import *
 
 
-percent = 0.8
-r = 50
+
 
 
 class Map():
@@ -80,8 +80,8 @@ class Map():
         x_mean = np.sum([coords[1]/len(particles) for [coords,angle] in particles])
         y_mean = np.sum([coords[0]/len(particles) for [coords,angle] in particles])
         pos_mean = (y_mean, x_mean)
-
-        tree = spatial.KDTree(particles)
+	coords = [cord for cord,angle in particles]
+        tree = spatial.KDTree(coords)
         in_place = tree.query_ball_point(pos_mean, radio)
 
         if len(in_place)/len(particles) >= percent:
@@ -95,13 +95,14 @@ class Map():
 	    #length = len(self.particles)
         for particle in self.particles:
             copy_n[particle[0][0],particle[0][1]] = 2
+	    rows,cols = copy_n.shape
 		#x_mean+= particle[0][0]/lenght
 	    length = float(len(self.particles))
-        x_mean = int(np.sum([particle[0][1]/length for particle in self.particles]))
-        y_mean = int(np.sum([particle[0][0]/length for particle in self.particles]))
+        x_mean = int(np.sum([(particle[0][1]-offset)/length for particle in self.particles]))
+        y_mean = int(np.sum([(particle[0][0]-offset)/length for particle in self.particles]))
         angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
-	    plt.figure()
-	    plt.imshow(copy_n)
+	plt.figure()
+	plt.imshow(copy_n[offset:rows-offset,offset:rows-offset])
         plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
         plt.show()
 
@@ -117,7 +118,7 @@ class Map():
 
     def move_particles(self,data):
         self.move_data = json.loads(data.data)
-	    print('recieve data :'  ,self.move_data)
+	print('recieve data :'  ,self.move_data)
         self.move_data_flag = True
 
 

@@ -165,8 +165,8 @@ class Control():
     		self.move_cmd.linear.x = 0
 	    	self.move_cmd.angular.z = 0
 	        self.mover.publish(self.move_cmd)
-            self.shutdown(incoming)
-            self.old_speed = [0,0]
+            	self.shutdown(incoming)
+            	self.old_speed = [0,0]
 
     def controller_ready(self,input):
         self.flag1 = (self.lin_controller.ready and self.ang_controller.ready) or (self.ang_controller.ready and self.angular_only)

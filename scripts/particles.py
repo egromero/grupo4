@@ -26,7 +26,7 @@ def original_particles_gen(N,n_angles,image, pos=None):
     possible_locations = [(index//cols,index%cols) for index in binary_index]
 
     if pos:
-	    print(pos)
+	print(pos)
         tree = spatial.KDTree(possible_locations)
         possible_ids = tree.query_ball_point(pos, radio)
 
@@ -51,7 +51,7 @@ def get_weights(particles,cartesian_matrix,global_map,operation='ccoeff_norm'):
 
         if in_map(particle, possible_locations):
             ## new matrix is what the robot 'sees' given an angle
-            new_matrix, new_center = rotate_and_center(cartesian_matrix,angle)
+                new_matrix, new_center = rotate_and_center(cartesian_matrix,angle)
 	        rows,cols = new_matrix.shape
 
             ## fake center reprecents the [0,0] of the window
