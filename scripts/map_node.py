@@ -78,8 +78,8 @@ class Map():
                 copy_n[particle[0][0],particle[0][1]] = 2
 		#x_mean+= particle[0][0]/lenght
 	    length = float(len(self.particles))
-            x_mean = int(np.sum([particle[0][0]/length for particle in self.particles]))
-            y_mean = int(np.sum([particle[0][1]/length for particle in self.particles]))
+            x_mean = int(np.sum([particle[0][1]/length for particle in self.particles]))
+            y_mean = int(np.sum([particle[0][0]/length for particle in self.particles]))
             angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
 	    plt.figure()
 	    plt.imshow(copy_n)

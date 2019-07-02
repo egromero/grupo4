@@ -13,7 +13,7 @@ class Obstacle():
 
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
 
-        self.r = rospy.Rate(rate)
+        self.r = rospy.Rate(rate*5)
 
         while not rospy.is_shutdown():
             self.flag = True
@@ -27,7 +27,7 @@ class Obstacle():
 	    boolean_2 = np.any(valid_values==20.0)
 	    
             self.publisher.publish(boolean_data or boolean_2)
-	    print(boolean_data or boolean_2)
+	    #print(boolean_data or boolean_2)
             self.flag = False
 
 

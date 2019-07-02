@@ -17,11 +17,11 @@ def pseudo_equal(m,value):
 def remap(rmatrix,coords):
     #rmatrix n x m array
     #coords is (y,x) coords of new array
-    global valid, multiplier
+    global valid, multiplier,max_r
     # print(coords)
     y,x = coords
     radius = np.sqrt(x**2 + y**2)
-    if radius>=max:
+    if radius>=max_r:
         return nothing_value
     else:
         try:
@@ -55,8 +55,8 @@ def remap(rmatrix,coords):
             print(r1,r2,t1,t2,q1,q2)
 ## Generate radial matrix
 def generate_radial_matrix(data):
-    global resolution,max,magic_number,angles
-    radial_vector = np.arange(0,max+resolution,resolution)
+    global resolution,max_r,magic_number,angles
+    radial_vector = np.arange(0,max_r+resolution,resolution)
     radial_matrix = np.zeros([magic_number+1,angles[1]-angles[0]+1])
 
 
@@ -72,10 +72,10 @@ def generate_radial_matrix(data):
 
 ## Generate cartesian matrix
 def generate_cartesian_matrix(data):
-    global max,resolution,magic_number
+    global max_r,resolution,magic_number
 
     radial_matrix = generate_radial_matrix(data)
-    cart_matrix = np.mgrid[-max:max+resolution:resolution,0:max+resolution:resolution].reshape(2,-1).T
+    cart_matrix = np.mgrid[-max_r:max_r+resolution:resolution,0:max_r+resolution:resolution].reshape(2,-1).T
     end_vector = [remap(radial_matrix,item) for item in cart_matrix]
     end_matrix = np.reshape(np.array(end_vector),[(magic_number+1)*2-1,magic_number+1])
 

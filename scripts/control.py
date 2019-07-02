@@ -139,8 +139,8 @@ class Control():
                 if self.angular_only:
                     lin_value = 0
                 [lin_value,ang_value] = self.threshold(lin_value,ang_value)
-            	self.move_cmd.linear.x = lin_value
-            	self.move_cmd.angular.z = ang_value
+            	self.move_cmd.linear.x = lin_value*self.active
+            	self.move_cmd.angular.z = ang_value*self.active
 		#print(ang_value)
 
 		#print(lin_value)
@@ -158,6 +158,8 @@ class Control():
             	if (f1 or f2) and self.data_ready:
                     self.shutdown()
         	    self.target_reached_pub.publish(True)
+
+		
             self.r.sleep()
 
     def shutdown(self,flag = False):
@@ -168,12 +170,13 @@ class Control():
         rospy.sleep(0.2)
 
     def enable_callback(self,data):
-        input = data.data
-        self.shutdown(input)
-	if not data:
+        incoming = data.data
+	if not incoming:
+		print('shutting down')
 		self.move_cmd.linear.x = 0
 	    	self.move_cmd.angular.z = 0
 	        self.mover.publish(self.move_cmd)
+        self.shutdown(incoming)
         self.old_speed = [0,0]
 
     def controller_ready(self,input):
