@@ -10,6 +10,8 @@ from std_msgs.msg import Bool,String
 from data_to_image import *
 from particles import *
 from parameters import *
+ 
+
 
 
 
@@ -58,9 +60,9 @@ class Map():
             self.particles = redistribute(self.particles,weights)
             print('weighting and redistribution complete')
             self.image_done_pub.publish(True)
-
             if self.found_place(self.particles, r):
                 self.show_image()
+		print("Localizado..")
                 break
 
             while not self.move_data_flag:
@@ -77,15 +79,16 @@ class Map():
         self.on = True
 
     def found_place(self, particles, radio):
-        x_mean = np.sum([coords[1]/len(particles) for [coords,angle] in particles])
-        y_mean = np.sum([coords[0]/len(particles) for [coords,angle] in particles])
-        pos_mean = (y_mean, x_mean)
+	length = float(len(self.particles))
+        x_mean = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
+        y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
+        pos_mean = (y_mean+offset_pos, x_mean+offset_pos)
 	coords = [cord for cord,angle in particles]
         tree = spatial.KDTree(coords)
         in_place = tree.query_ball_point(pos_mean, radio)
-
         if len(in_place)/len(particles) >= percent:
             return True
+
 
     def show_image(self):
         copy_n = np.copy(self.global_map)
@@ -98,11 +101,11 @@ class Map():
 	    rows,cols = copy_n.shape
 		#x_mean+= particle[0][0]/lenght
 	    length = float(len(self.particles))
-        x_mean = int(np.sum([(particle[0][1]-offset)/length for particle in self.particles]))
-        y_mean = int(np.sum([(particle[0][0]-offset)/length for particle in self.particles]))
+        x_mean = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
+        y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
 	plt.figure()
-	plt.imshow(copy_n[offset:rows-offset,offset:rows-offset])
+	plt.imshow(copy_n[offset_pos:rows-offset_pos,offset_pos:rows-offset_pos])
         plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
         plt.show()
 

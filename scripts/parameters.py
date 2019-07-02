@@ -9,12 +9,14 @@ check_max = False
 N = 300
 n_angles = 12
 sigma = 2
-initial_pos = [150,150]
+## reduces image to show, consider when observing new initial_pos
+offset_pos = 120
+initial_pos = [85+offset_pos,85+offset_pos]
 radio = 30 #initial radius (particle gen)
 percent = 0.8
-r = 50 #found oneself radius
+r = 20 #found oneself radius
 
-offset = 120 ## reduces image to show, consider when observing new initial_pos
+ 
 angles = [0,180]
 window = 65 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
