@@ -2,7 +2,7 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 
-im = cv2.imread("map.pgm")
+im = cv2.imread("maps/map.pgm")
 
 rows, colums, chanel = im.shape
 index=[]
