@@ -1,6 +1,10 @@
+from gridmap import *
+import numpy as np
+import cv2
+
 #
 # State in graph ( cell )
-#
+# State == Node
 class State( object ):
 
   def __init__( self, node_id, pixmap, cell_size = (7, 7) ):
@@ -11,13 +15,26 @@ class State( object ):
     self.parent = None          # Previous state
 
   # IMPLEMENT ME!
-  def expand( self ):
+  def expand( self ):   # State( pos, map )
     successors = list()
     # Step 1: Convert from the cell's coordinate (x, y) to the cell's central pixel of map image (x_pix, y_pix).
+    center = grid_center(self.node_id)
+
     # Step 2: Determine whether exist a wall between the current cell's central pixel and the adjacent cell's
     #         central pixel, based on the pixel's values between centers.
-    # Step 3: If there is not a wall, create the successor state and add it to the 'successors' list.
-    #         Consider the following action definition: 'go_north', 'go_south', 'go_east', 'go_west'
+    neighbours = get_neighbour(center)
+    for n in neighbours.keys():
+        if neighbours[n]:
+            wall = check_wall(self.pixmap, center, neighbours[n])
+
+            # Step 3: If there is not a wall, create the successor state and add it to the 'successors' list.
+            #         Consider the following action definition: 'go_north', 'go_south', 'go_east', 'go_west'
+            if not wall:
+                new = State(neighbours[n], self.pixmap)
+                new.prev_action = n
+                new.parent = self
+                successors.append(new)
+
     return successors
 
   def __eq__( self, other ):
@@ -36,18 +53,19 @@ class State( object ):
 # BFS Algorithm
 #
 def bf_search( s0, sg ):
-  open_queue = list()
-  closed_queue = list()
-  open_queue.append( s0 )
-  while len( open_queue ) > 0:
-    s = open_queue.pop( 0 )
-    closed_queue.append( s )
-    if s == sg:
-      break
-    successors = s.expand()
-    successors = list( set( successors ) - set( open_queue ) - set( closed_queue ) )
-    open_queue += successors
-  return s
+    open_queue = list()
+    closed_queue = list()
+    open_queue.append( s0 )
+    while len( open_queue ) > 0:
+        s = open_queue.pop( 0 )
+        closed_queue.append( s )
+        if s.node_id == sg.node_id:
+            print("Done")
+            break
+        successors = s.expand()
+        successors = list( set( successors ) - set( open_queue ) - set( closed_queue ) )
+        open_queue += successors
+    return s
 
 #
 # Build sequence from goal state
@@ -72,26 +90,25 @@ def img2map( pixvalue, occupied_thresh, free_thresh ):
   else:
     return -1
 
+def func(map, cell_s, cell_g):
+    # These three lines can be replaced by the map received from map_server node.
+    map_img = cv2.imread( map, cv2.IMREAD_GRAYSCALE )
+    vect_img2map = np.vectorize( img2map )
+    ros_map = vect_img2map( map_img, 0.65, 0.196 )
+
+    s0 = State( cell_s, ros_map ) # Initial state in graph
+    sg = State( cell_g, ros_map ) # Goal state in graph
+    print( 'Going from %s to %s\n' % ( s0, sg ) )
+
+    print( 'Plan found (cell_a, action, cell_b):' )
+    sg = bf_search( s0, sg ) # Breadth-First Search algorithm execution
+    result = get_sequence( sg )
+
+    for cell_a, action, cell_b in result:
+        print( '%s, %s, %s' % (cell_a, action, cell_b) )
+
+    return result
+
 
 if __name__ == '__main__':
-
-  import numpy as np
-  import cv2
-
-  # These three lines can be replaced by the map received from map_server node.
-  map_img = cv2.imread( 'map.pgm', cv2.IMREAD_GRAYSCALE )
-  vect_img2map = np.vectorize( img2map )
-  ros_map = vect_img2map( map_img, 0.65, 0.196 )
-
-  cell_s = (1, 1) # Initial cell
-  cell_g = (3, 4) # Goal cell
-  s0 = State( cell_s, ros_map ) # Initial state in graph
-  sg = State( cell_g, ros_map ) # Goal state in graph
-  print( 'Going from %s to %s\n' % ( s0, sg ) )
-
-  print( 'Plan found (cell_a, action, cell_b):' )
-  sg = bf_search( s0, sg ) # Breadth-First Search algorithm execution
-  for cell_a, action, cell_b in get_sequence( sg ):
-    print( '%s, %s, %s' % (cell_a, action, cell_b) )
-
-
+    func('map.pgm', (4, 12), (20, 4))
