@@ -2,7 +2,7 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 
-im = cv2.imread("maps/map.pgm")
+im = cv2.imread("map.pgm")
 
 rows, colums, chanel = im.shape
 index=[]
@@ -44,7 +44,7 @@ def east(img, pose, objetive):
 
 
 plt.imshow(im)
-print(check_wall(im, (4,20), (4,12)))
+print(check_wall(im, (12,4), (20,4)))
 plt.show()
 
 

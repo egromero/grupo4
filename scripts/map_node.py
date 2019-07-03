@@ -62,7 +62,7 @@ class Map():
             self.image_done_pub.publish(True)
             if self.found_place(self.particles, r):
                 self.show_image()
-		print("Localizado..")
+		print("Localizado en:", self.x_mean_loc, self.y_mean_loc)
                 break
 
             while not self.move_data_flag:
@@ -80,9 +80,9 @@ class Map():
 
     def found_place(self, particles, radio):
 	length = float(len(self.particles))
-        x_mean = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
-        y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
-        pos_mean = (y_mean+offset_pos, x_mean+offset_pos)
+        self.x_mean_loc = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
+        self.y_mean_loc = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
+        pos_mean = (self.y_mean_loc+offset_pos, self.x_mean_loc+offset_pos)
 	coords = [cord for cord,angle in particles]
         tree = spatial.KDTree(coords)
         in_place = tree.query_ball_point(pos_mean, radio)
