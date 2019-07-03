@@ -4,7 +4,6 @@
 '''
 Script to transform the depth map from Asus Xtion (or Kinect) to a 3D cloud point
 attached to the base_link (robot).
-
 '''
 
 import rospy
@@ -61,12 +60,12 @@ class DeepScan(object):
 
         self.scan_pub = rospy.Publisher('/scan', LaserScan, queue_size=10)
         self.has_transform = False
-        
+
     def __depth_handler( self, data ):
         self.count_msg += 1
         if self.count_msg%self.subsample_msg != 0:
             return
-        
+
         if not self.has_transform:
             try:
                 rospy.loginfo(rospy.get_namespace())
@@ -76,7 +75,7 @@ class DeepScan(object):
                 if self.M is None:
                     self.M = self.listener.fromTranslationRotation(trans, rot)
                     rospy.loginfo(str(self.M))
-                
+
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 rospy.loginfo("Not getting kinect to base_link transform ")
 
@@ -99,18 +98,18 @@ class DeepScan(object):
             dep_data[1,:] = YK*D*subsample_factor
             dep_data[2,:] = D
 
-            
+
             # get the 3D point cloud seen from kinect
             pcl_data = np.dot(self.PI, dep_data)
             pcl_data[2,:] *= -1
-            
+
             # get the 3D point cloud seen from the robot
             base_data = np.dot(self.M, pcl_data)
             ang_kinect = np.arctan2(base_data[1,:], base_data[0,:])
 
             # remove floor data
             ind = np.where(base_data[2,:] > 0.05)[0]
-            # get the points with Z > 0.05            
+            # get the points with Z > 0.05
             base_data_filt = base_data[:,ind]
 
             X = base_data_filt[0,:].reshape(1,-1)
@@ -121,7 +120,7 @@ class DeepScan(object):
             dist_to_rays = np.abs(dist_to_rays / self.sec)
 
             assigned_rays = np.argmin(dist_to_rays, axis=0)
-    
+
             # rospy.loginfo(str(X.shape) + "   " + str(Y.shape))
             distances = np.sqrt(X*X + Y*Y)[0,:]
             scan_kinect = np.zeros((2, len(self.alpha_vector)))
@@ -158,7 +157,3 @@ class DeepScan(object):
 if __name__ == "__main__":
     dscan = DeepScan()
     rospy.spin()
-        
-        
-        
-        

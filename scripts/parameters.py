@@ -4,41 +4,49 @@ name = 'measures_0'
 sufix = '.txt'
 
 
-N = 800
+check_max = False
+
+N = 300
 n_angles = 12
 sigma = 2
+## reduces image to show, consider when observing new initial_pos
+offset_pos = 120
+initial_pos = [85+offset_pos,85+offset_pos]
+radio = 30 #initial radius (particle gen)
+percent = 0.8
+r = 20 #found oneself radius
 
 
 angles = [0,180]
-window = 60 # add and substract to limits of angles.
+window = 65 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
-max = 2 # max distance, set by sensor
+max_r = 2.5 # max distance, set by sensor
 resolution = 0.02 # resolution of generated image, lower value (more res) = more time expensive
-original_res = 0.1
+original_res = 0.12
 ratio = original_res/resolution
-magic_number = int(max/resolution)
+magic_number = int(max_r/resolution)
 offset = 90
 multiplier = 10
 gaussian_size = 5
 gaussian_flag = True
-nothing_value = 0.05
+nothing_value = 0.1
 threshold = 0.001
 
 rolled = 5
 
-obstacle_distance = 0.5
+obstacle_distance = 0.45
 
 rate = 60
 
-ang_speed = 0.6
-ang_acc = 0.2
-ang_stop = 0.1
+ang_speed = 0.9
+ang_acc = 0.25
+ang_stop = 0.05
 ang_thresh = 2/36*np.pi
 
 
-lin_speed = 0.2
+lin_speed = 0.1
 lin_acc = 0.08
 lin_stop = 0.05
 
-sigma_r = 0.04
-sigma_ang = 0.0277
+sigma_r = 0.1
+sigma_ang = 0.1

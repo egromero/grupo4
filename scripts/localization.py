@@ -23,7 +23,7 @@ class Localizer():
     	rospy.sleep( 0.2 )
 
     	rospy.Subscriber('/scan', LaserScan, self.scanner_data)
-   	rospy.sleep(0.2)
+        rospy.sleep(0.2)
 
 
     	print('Init complete')
@@ -35,7 +35,7 @@ class Localizer():
     	    print('Sent {}'.format(encoded))
     	    self.flag = False
     	    while not self.flag and not rospy.is_shutdown():
-	    	self.r.sleep()
+                self.r.sleep()
             self.new_data_flag = True
             while self.new_data_flag:
                 rospy.sleep(0.01)
@@ -45,7 +45,7 @@ class Localizer():
 
 
     def target_reached_callback(self,data):
-	self.flag = data.data
+        self.flag = data.data
 		#print('incoming flag :',data.data)
 
     #scanner callback

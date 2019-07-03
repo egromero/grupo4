@@ -14,11 +14,10 @@ def process(data,zero = [0,0,0,0]):
     new_y = np.cos(zero[3])*(data.position.y-zero[1]) - np.sin(zero[3])*(data.position.x-zero[0])
     new_z = data.position.z  - zero[2]
     angaux = data.orientation.w
-#print('angaux = {}'.format(angaux))
+    #print('angaux = {}'.format(angaux))
     angaux2 = -2*np.arccos( angaux ) if (data.orientation.z < 0) else 2*np.arccos( angaux )
-#print('angaux2 = {}'.format(angaux2))
+    #print('angaux2 = {}'.format(angaux2))
     new_ang = pi_fix(angaux2-zero[3])
-
 
     pos = [new_x,new_y,new_z,new_ang]
     return pos
@@ -35,14 +34,13 @@ class States():
         ##Writer Publisher
         self.writer = rospy.Publisher('write_permit',String,queue_size =10)
 
-
         ## Subscribe to odometry
         rospy.Subscriber( 'odom', Odometry, self.Odom_read)
         ## state publisher
         self.publisher = rospy.Publisher('our_state',String,queue_size =10)
         self.change_pub = rospy.Publisher('state_change',String,queue_size =10)
 	    #rospy.init_node('states',anonymous = True)
-        self.r = rospy.Rate(60);
+        self.r = rospy.Rate(60)
         rospy.Subscriber('reset',Bool,self.reset)
         print('Creating states node...')
         while not rospy.is_shutdown():
@@ -51,10 +49,11 @@ class States():
 
             state_write = '{},{},{},{}'.format(self.pos[0],self.pos[1],self.pos[3],self.timer.time())
             #self.writer.publish(state_write)
-	    #print('Posiciones : ',state_write)
+            #print('Posiciones : ',state_write)
             self.r.sleep()
+
     def reset(self,data):
-	print('reset request')
+        print('reset request')
         radius = np.sqrt(self.pos[0]**2+self.pos[1]**2)
         #pseudo_angle = np.arctan2(self.pos[1]/self.pos[0])
         ## use pseudo angle if more precision is desired

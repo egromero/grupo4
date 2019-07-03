@@ -31,7 +31,7 @@ class Turtlebot(object):
 			while not self.flag and not rospy.is_shutdown():
 				#print('Actual flag' ,self.flag)
 				self.r.sleep()
-                        rospy.sleep(0.1)
+                rospy.sleep(0.1)
 
 	def obstacle_response(self,data):
 		if data.data:

@@ -1,68 +1,108 @@
+#!/usr/bin/env python
 import rospy
 import numpy as np
+from scipy import spatial
 import matplotlib.pyplot as plt
+import json
 
+from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Bool,String
 from data_to_image import *
 from particles import *
-
+from parameters import *
 
 
 class Map():
     def __init__(self):
-        self.fig, (self.ax1,self.ax2) = plt.subplots(2)
         self.data = None
+        self.move_data = None
         self.new_data_flag = False
         self.take_data_flag = False
+        self.on = False
         self.move_data_flag = False
         self.image_done_pub = rospy.Publisher('image_done',Bool,queue_size = 1)
         rospy.Subscriber('main_on',Bool,self.on_callback)
-        ## Process map and initial particles, and then send flag for initial movements
-        tic = time.time()
-        self.global_map = image_preprocess()
-        self.particles = original_particles_gen(N,n_angles,global_map)
-        toc = time.time()-tic
-        print('Time for image preprocessing + origin particles: ',toc)
-        self.image_done_pub.publish(True)
+        self.move_allowed_pub = rospy.Publisher('move_allowed',Bool,queue_size=1)
 
         ## take new data sub, and move particle data sub
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
         rospy.Subscriber('image_take',Bool,self.take_data)
         rospy.Subscriber('state_change',String,self.move_particles)
 
+        ## Process map and initial particles, and then send flag for initial movements
+    	while (not self.on and not rospy.is_shutdown()):
+    	    rospy.sleep(1)
+
+        tic = time.time()
+        self.global_map = image_preprocess()
+        self.particles = original_particles_gen(N,n_angles,self.global_map,initial_pos)
+        toc = time.time()-tic
+        print('Time for image preprocessing + origin particles: ',toc)
+        self.image_done_pub.publish(True)
+
         while not rospy.is_shutdown():
             while not self.new_data_flag:
                 rospy.sleep(1)
-
+            print('got data')
             cartesian_matrix = generate_cartesian_matrix(self.data)
-            self.ax2.imshow(cartesian_matrix)
+            print('cartesian matrix complete')
             self.new_data_flag = False
+            print('pre_imshow1')
+            plt.figure()
+            plt.imshow(cartesian_matrix)
+            print('pre_weights')
             weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
-            self.particles = redistribute(particles,weights)
+            self.particles = redistribute(self.particles,weights)
+            print('weighting and redistribution complete')
             self.image_done_pub.publish(True)
+            if self.found_place(self.particles, r):
+                self.show_image()
+		print("Localizado..")
+                break
 
             while not self.move_data_flag:
                 rospy.sleep(1)
 
-            self.particles = desplazar_particulas(particles,self.data[0],self.data[1])
+            self.particles = desplazar_particulas(self.particles,self.move_data[0],self.move_data[1]*360/(2*np.pi))
+
             self.move_data_flag = False
 
             self.show_image()
+            self.move_allowed_pub.publish(True)
+
+    def on_callback(self,data):
+        self.on = True
+
+    def found_place(self, particles, radio):
+	length = float(len(self.particles))
+        x_mean = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
+        y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
+        pos_mean = (y_mean+offset_pos, x_mean+offset_pos)
+	coords = [cord for cord,angle in particles]
+        tree = spatial.KDTree(coords)
+        in_place = tree.query_ball_point(pos_mean, radio)
+        if len(in_place)/len(particles) >= percent:
+            return True
 
 
     def show_image(self):
-            copy_n = np.copy(self.global_map)
-            for particle in self.particles:
-                copy_n[particle[0][0],particle[0][1]] = 2
-
-            x_mean = np.sum([coords[1]/len(particles) for [coords,angle] in particles])
-            y_mean = np.sum([coords[0]/len(particles) for [coords,angle] in particles])
-            angle_mean = np.sum([(angle-360)/len(particles) for [coords,angle] in particles])
-
-            self.ax1.imshow(copy_n)
-            plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 3)
-
-            plt.show()
+        copy_n = np.copy(self.global_map)
+	    #x_mean = 0
+	    #y_mean = 0
+	    #angle_mean = 0
+	    #length = len(self.particles)
+        for particle in self.particles:
+            copy_n[particle[0][0],particle[0][1]] = 2
+	    rows,cols = copy_n.shape
+		#x_mean+= particle[0][0]/lenght
+	    length = float(len(self.particles))
+        x_mean = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
+        y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
+        angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
+	plt.figure()
+	plt.imshow(copy_n[offset_pos:rows-offset_pos,offset_pos:rows-offset_pos])
+        plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
+        plt.show()
 
     def take_data(self,data):
         self.take_data_flag = True
@@ -72,49 +112,15 @@ class Map():
             self.data = laserScan.ranges
             self.new_data_flag = True
             self.take_data_flag = False
+            self.image_done_pub.publish(True)
 
     def move_particles(self,data):
-        self.data = json.loads(data.data)
+        self.move_data = json.loads(data.data)
+	print('recieve data :'  ,self.move_data)
         self.move_data_flag = True
 
 
-
-##generate cartesian matrix
-# f,axes = plt.subplots(len(data))
-print(len(data))
-for i,sample in enumerate(data):
-    tic = time.time()
-    cartesian_matrix = generate_cartesian_matrix(sample)
-    # plt.imshow(cartesian_matrix)
-    # plt.show()
-    weights = get_weights(particles,cartesian_matrix,global_map,'ccoeff_norm')
-    # print(weights)
-    particles = redistribute(particles,weights)
-    particles = desplazar_particulas(particles,60,sigma)
-    copy_n = np.copy(global_map)
-    for particle in particles:
-        copy_n[particle[0][0],particle[0][1]] = 2
-
-
-
-#
-# ## Compute origin particles
-# particles = np.array(original_particle_gen(N,global_map))
-# # print(particles[0])
-#
-# ## paint particle in global image
-# ## note: should make a copy of global map for this
-# for i in range(10):
-#     tic = time.time()
-#     weights = get_weights(particles, cartesian_matrix, global_map,'ccoeff_norm')
-#     weights = weights/np.sum(weights)
-#     toc = time.time()-tic
-#     print('Time for getting weight of all particles: ',toc)
-#
-#     tic = time.time()
-#     particles = redistribute(particles, weights)
-#     toc = time.time()-tic
-#     print('Time for getting new distribution of all particles: ',toc)
-#
-#
-#
+if __name__ == '__main__':
+	rospy.init_node( "map_node" )
+	handler = Map()
+	rospy.spin()

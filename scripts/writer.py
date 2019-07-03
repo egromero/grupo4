@@ -19,7 +19,7 @@ class Writer():
             with open(file_counter) as fl:
                 medium = fl.readline().rstrip('\n')
                 print(medium)
-		self.file_number = int(medium)
+            self.file_number = int(medium)
             with open(file_counter,'w') as fl:
                 fl.write(str(self.file_number+1))
         except IOError:
