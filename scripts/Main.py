@@ -11,13 +11,14 @@ repeat_route = [0.5,0,None]
 
 class Turtlebot(object):
 	def __init__( self ):
-		self.flag = True
-		self.absolute_obstacle_flag = False
-		self.obstacle = False
-		self.image_flag = False
-		self.move_allowed_flag = False
+		self.flag = True ## wait till target has been reached flag
+		self.absolute_obstacle_flag = False ## allow obstacle interruption
+		self.obstacle = False ## obstacle in your face
+		self.image_flag = False ##stay still until data is taken by sensor
+		self.move_allowed_flag = False ## wait for particle redistribution
+		self.localized = False ## Iterate foolishly till localized
 
-		## bad joke.
+
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
 		rospy.sleep( 0.2 )
 
@@ -34,6 +35,12 @@ class Turtlebot(object):
 		rospy.Subscriber('image_done',Bool,self.image_callback)
 		rospy.Subscriber('move_allowed',Bool,self.move_allowed_callback)
 
+		##localized sub
+		rospy.Subscriber('localized',Bool,self.localized_callback)
+
+		##music pub
+		self.music_pub = rospy.Publisher('music',Bool,queue_size=1)
+
 		#control enabler/disabler publisher.
 		self.control_pub = rospy.Publisher('control_enable',Bool,queue_size=1)
 
@@ -41,26 +48,15 @@ class Turtlebot(object):
 		## wait for map and initial particles
 		self.on_pub.publish(True)
 
+
+		## wait for global map setup.
 		while (not self.image_flag and not rospy.is_shutdown()):
 			self.r.sleep()
 
-		## initial 360 degree spin with data
-		#for i in range(6):
-			## take image and wait
-		#	self.image_flag = False
-		#	self.image_take_pub.publish(True)
-		#	while not self.image_flag and not rospy.is_shutdown:
-		#		self.r.sleep()
-			## image done? move and send movement data to map node
-		#	self.target_wait(initial_route)
-			#print('route_done')
+		self.absolute_obstacle_flag = True ## Allow obstacles
 
-		#	while (not self.move_allowed_flag and not rospy.is_shutdown()):
-		#		self.r.sleep()
-		#	self.move_allowed_flag = False
-
-		self.absolute_obstacle_flag = True
-		while not rospy.is_shutdown():
+		## localize oneself loop
+		while not rospy.is_shutdown() and not self.localized:
 			self.image_flag = False
 			self.image_take_pub.publish(True)
 			while (not self.image_flag and not rospy.is_shutdown()):
@@ -78,6 +74,13 @@ class Turtlebot(object):
 				self.r.sleep()
 			self.move_allowed_flag = False
 
+		## main loop once localized
+		while not rospy.is_shutdown():
+			pass
+	def localized_callback(self,data):
+		if data.data:
+			self.localized = True
+			self.music_pub.publish(True)
 	def image_callback(self,data):
 		self.image_flag = True
 

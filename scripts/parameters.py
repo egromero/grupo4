@@ -4,6 +4,10 @@ name = 'measures_0'
 sufix = '.txt'
 
 
+pkg_name = 'g4p'
+playfile = 'ff_fanfare.wav'
+
+
 check_max = False
 
 N = 300
@@ -16,7 +20,7 @@ radio = 30 #initial radius (particle gen)
 percent = 0.8
 r = 20 #found oneself radius
 
- 
+
 angles = [0,180]
 window = 65 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
@@ -50,5 +54,3 @@ lin_stop = 0.05
 
 sigma_r = 0.1
 sigma_ang = 0.1
-
-

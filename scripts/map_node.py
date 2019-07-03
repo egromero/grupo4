@@ -10,7 +10,7 @@ from std_msgs.msg import Bool,String
 from data_to_image import *
 from particles import *
 from parameters import *
- 
+
 
 
 
@@ -21,13 +21,19 @@ class Map():
     def __init__(self):
         self.data = None
         self.move_data = None
+
         self.new_data_flag = False
         self.take_data_flag = False
-        self.on = False
+        self.on = False ##main program is running
         self.move_data_flag = False
+        self.localized = False ## localized flag
+
         self.image_done_pub = rospy.Publisher('image_done',Bool,queue_size = 1)
         rospy.Subscriber('main_on',Bool,self.on_callback)
         self.move_allowed_pub = rospy.Publisher('move_allowed',Bool,queue_size=1)
+
+        ## localized publisher
+        self.localized_pub = rospy.Publisher('localized',Bool,queue_size=1)
 
         ## take new data sub, and move particle data sub
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
@@ -62,8 +68,11 @@ class Map():
             self.image_done_pub.publish(True)
             if self.found_place(self.particles, r):
                 self.show_image()
-		print("Localizado en:", self.x_mean_loc, self.y_mean_loc)
-                break
+                print("Localizado en:", self.x_mean_loc, self.y_mean_loc)
+                if not self.localized:
+                    self.localized = True
+                    self.localized_pub.publish(True)
+
 
             while not self.move_data_flag:
                 rospy.sleep(1)
