@@ -1,0 +1,40 @@
+<launch>
+
+
+  <node name="lin_control" pkg="pid" type="controller" ns="lin_control">
+    <param name="Kp" value="-1.2" />
+    <param name="Ki" value="-0.12" />
+    <param name="Kd" value="-0.01" />
+    <param name="windup_limit" value="0.15"/>
+  </node>
+
+  <node name="ang_control" pkg="pid" type="controller" ns="ang_control">
+    <param name="Kp" value="-0.9" />
+    <param name="Ki" value="-0.01" />
+    <param name="Kd" value="-0.01" />
+    <param name="windup_limit" value="0.1"/>
+  </node>
+
+  <node pkg = "g4p" type = "obstacle.py" name = "obstacle" output="screen">
+  </node>
+
+  <node pkg = "g4p" type = "turtlebot_audio.py" name = "sound_node" output="screen">
+  </node>
+
+  <node pkg = "g4p" type = "map_node.py" name = "map" output="screen">
+  </node>
+
+  <node pkg = "g4p" type = "states.py" name = "states" output="screen">
+  </node>
+
+  <node pkg = "g4p" type = "control.py" name = "control" output="screen">
+  </node>
+
+  <node pkg = "g4p" type = "scan_from_kinect.py" name="scaner" output = "screen">
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_kinect_frame_nav" args="-0.1 0.0 0.30 -1.570796327 0.0 1.570796327 /base_link /kinect_frame 100" />
+   <include file="$(find openni_launch)/launch/openni.launch" />
+
+
+</launch>
