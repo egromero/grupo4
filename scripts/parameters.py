@@ -15,7 +15,7 @@ n_angles = 12
 sigma = 2
 ## reduces image to show, consider when observing new initial_pos
 offset_pos = 120
-initial_pos = [85+offset_pos,85+offset_pos]
+initial_pos = [135+offset_pos,135+offset_pos]
 radio = 30 #initial radius (particle gen)
 percent = 0.8
 r = 20 #found oneself radius
