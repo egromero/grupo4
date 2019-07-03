@@ -2,9 +2,10 @@ from gridmap import *
 import numpy as np
 import cv2
 
-#
-# State in graph ( cell )
-# State == Node
+
+map = 'map.pgm'
+
+
 class State( object ):
 
   def __init__( self, node_id, pixmap, cell_size = (7, 7) ):
@@ -49,9 +50,7 @@ class State( object ):
   def __str__( self ):
     return str( self.node_id )
 
-#
-# BFS Algorithm
-#
+
 def bf_search( s0, sg ):
     open_queue = list()
     closed_queue = list()
@@ -60,16 +59,13 @@ def bf_search( s0, sg ):
         s = open_queue.pop( 0 )
         closed_queue.append( s )
         if s.node_id == sg.node_id:
-            print("Done")
+            # print("Done")
             break
         successors = s.expand()
         successors = list( set( successors ) - set( open_queue ) - set( closed_queue ) )
         open_queue += successors
     return s
 
-#
-# Build sequence from goal state
-#
 def get_sequence( sg ):
   aseq = list()
   s = sg
@@ -78,9 +74,6 @@ def get_sequence( sg ):
     s = s.parent
   return aseq[::-1] # Invert sequence order from sg->...->s0 to s0->...->sg
 
-#
-# ROS map format
-#
 def img2map( pixvalue, occupied_thresh, free_thresh ):
   p = (255 - pixvalue) / 255.0
   if p > occupied_thresh:
@@ -90,25 +83,38 @@ def img2map( pixvalue, occupied_thresh, free_thresh ):
   else:
     return -1
 
-def func(map, cell_s, cell_g):
-    # These three lines can be replaced by the map received from map_server node.
-    map_img = cv2.imread( map, cv2.IMREAD_GRAYSCALE )
-    vect_img2map = np.vectorize( img2map )
-    ros_map = vect_img2map( map_img, 0.65, 0.196 )
 
-    s0 = State( cell_s, ros_map ) # Initial state in graph
-    sg = State( cell_g, ros_map ) # Goal state in graph
-    print( 'Going from %s to %s\n' % ( s0, sg ) )
+class Camino():
+    def __init__(self):
+        self.inicio, self.fin = None, None
 
-    print( 'Plan found (cell_a, action, cell_b):' )
-    sg = bf_search( s0, sg ) # Breadth-First Search algorithm execution
-    result = get_sequence( sg )
+        self.path_pub = rospy.Publisher('path_to_point',String,queue_size=10)
+        rospy.Subscriber('move_to',String,self.get_path)
 
-    for cell_a, action, cell_b in result:
-        print( '%s, %s, %s' % (cell_a, action, cell_b) )
+    def get_path(self, data):
+        self.inicio, self.fin = json.loads(data.data)
+        puntos = self.func(map, self.inicio, self.fin)
+        encoded = json.dumps(puntos)
+		self.target_publisher.publish(encoded)
 
-    return result
+    def func(self, map, cell_s, cell_g):
+        # These three lines can be replaced by the map received from map_server node.
+        map_img = cv2.imread( map, cv2.IMREAD_GRAYSCALE )
+        vect_img2map = np.vectorize( img2map )
+        ros_map = vect_img2map( map_img, 0.65, 0.196 )
 
+        s0 = State( cell_s, ros_map ) # Initial state in graph
+        sg = State( cell_g, ros_map ) # Goal state in graph
+        # print( 'Going from %s to %s\n' % ( s0, sg ) )
+
+        # print( 'Plan found (cell_a, action, cell_b):' )
+        sg = bf_search( s0, sg ) # Breadth-First Search algorithm execution
+        result = get_sequence( sg )
+
+        #for cell_a, action, cell_b in result:
+            #print( '%s, %s, %s' % (cell_a, action, cell_b) )
+
+        return [cell_b for cell_a, action, cell_b in result]
 
 if __name__ == '__main__':
-    func('map.pgm', (4, 12), (20, 4))
+    print(func('map.pgm', (4, 12), (20, 4)))
