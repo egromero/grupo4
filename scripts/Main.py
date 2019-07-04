@@ -87,18 +87,22 @@ class Turtlebot(object):
 			self.move_allowed_flag = False
 
 		## main loop once localized
-		while not rospy.is_shutdown():
+		self.absolute_obstacle_flag = False
+		while not rospy.is_shutdown() and self.places_to_be:
+			## request actual location
 			self.pos_actual = None
 			self.beginning_pub.publish(True)
 			while not self.pos_actual and not rospy.is_shutdown()):
 				self.r.sleep()
 
+			## ask for path
 			self.path = None
 			encoded = json.dumps([self.pos_actual, self.places_to_be.pop(0)])
 			self.destination_pub.publish(encoded)
 			while (not self.path and not rospy.is_shutdown()):
 				self.r.sleep()
 
+			## execute every movement
 			for x_og, y_og in self.path:
 				# Convercion de x, y
 				x_R = x_og - self.pos_actual[0]
