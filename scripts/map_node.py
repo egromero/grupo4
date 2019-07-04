@@ -58,10 +58,6 @@ class Map():
             cartesian_matrix = generate_cartesian_matrix(self.data)
             print('cartesian matrix complete')
             self.new_data_flag = False
-            print('pre_imshow1')
-            plt.figure()
-            plt.imshow(cartesian_matrix)
-            print('pre_weights')
             weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
             self.particles = redistribute(self.particles,weights)
             print('weighting and redistribution complete')
@@ -93,18 +89,23 @@ class Map():
         self.y_mean_loc = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         pos_mean = (self.y_mean_loc+offset_pos, self.x_mean_loc+offset_pos)
 	coords = [cord for cord,angle in particles]
-        tree = spatial.KDTree(coords)
-        in_place = tree.query_ball_point(pos_mean, radio)
-        angles = [particles[i] for i in in_place]
-        std_dev = np.std(angles)
+	try:
+	        tree = spatial.KDTree(coords,leafsize=15)
+        	in_place = tree.query_ball_point(pos_mean, radio)
 
-        if (len(in_place)/len(particles) >= percent) and std_dev<std_target:
-            return True
+	        angles = [particles[i][1] for i in in_place]
+	        std_dev = np.std(angles)
+		print('std_dev = :',std_dev)
+	        if (len(in_place)/len(particles) >= percent) and std_dev<std_target:
+	            return True
 
+	except RuntimeError:
+		return True
     def get_x_y(self, data):
         self.x_mean_loc = int(np.sum([(particle[0][1])/length for particle in self.particles]))
         self.y_mean_loc = int(np.sum([(particle[0][0])/length for particle in self.particles]))
         angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
+	angle_mean = grad_fix(angle_mean)
         pos_mean = (self.x_mean_loc, self.y_mean_loc, angle_mean)
         encoded = json.dumps(pos_mean)
         self.initial_pub.publish(encoded)

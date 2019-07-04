@@ -5,9 +5,6 @@ import cv2
 import rospkg
 from parameters import *
 
-rospack = rospkg.RosPack()
-our_path = rospack.get_path('g43')
-our_path += '/scripts'
 
 
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
@@ -87,7 +84,7 @@ def generate_cartesian_matrix(data):
 ## Preprocess image for map matching
 def image_preprocess():
     global ratio,magic_number, gaussian_size
-    file_name = our_path + '/' + map_name
+    file_name = our_path + map_name
     #print(file_name)
     img = cv2.imread(file_name,0)
 

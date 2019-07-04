@@ -3,6 +3,7 @@ import rospy
 import numpy as np
 import cv2
 
+from std_msgs.msg import Bool,String
 from parameters import *
 from gridmap import *
 
@@ -59,7 +60,6 @@ def bf_search( s0, sg ):
         s = open_queue.pop( 0 )
         closed_queue.append( s )
         if s.node_id == sg.node_id:
-            # print("Done")
             break
         successors = s.expand()
         successors = list( set( successors ) - set( open_queue ) - set( closed_queue ) )
@@ -95,29 +95,27 @@ class Camino():
         self.inicio, self.fin = json.loads(data.data)
         puntos = self.func(map_name, self.inicio, self.fin)
         encoded = json.dumps(puntos)
-		self.target_publisher.publish(encoded)
+	self.path_pub.publish(encoded)
 
     def func(self, map, cell_s, cell_g):
-        # These three lines can be replaced by the map received from map_server node.
+     
         map_img = cv2.imread( map, cv2.IMREAD_GRAYSCALE )
         vect_img2map = np.vectorize( img2map )
         ros_map = vect_img2map( map_img, 0.65, 0.196 )
 
-        # Centrar
         cell_s, cell_g = grid_center(cell_s), grid_center(cell_g)
 
-        s0 = State( cell_s, ros_map ) # Initial state in graph
-        sg = State( cell_g, ros_map ) # Goal state in graph
-        # print( 'Going from %s to %s\n' % ( s0, sg ) )
+        s0 = State( cell_s, ros_map ) 
+        sg = State( cell_g, ros_map ) 
 
-        # print( 'Plan found (cell_a, action, cell_b):' )
-        sg = bf_search( s0, sg ) # Breadth-First Search algorithm execution
+
+        sg = bf_search( s0, sg ) 
         result = get_sequence( sg )
 
-        #for cell_a, action, cell_b in result:
-            #print( '%s, %s, %s' % (cell_a, action, cell_b) )
-
+       
         return [cell_b for cell_a, action, cell_b in result]
 
 if __name__ == '__main__':
-    print(func('map.pgm', (4, 12), (20, 4)))
+    rospy.init_node('path_maker')
+    path_maker = ()
+    rospy.spin()	

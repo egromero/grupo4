@@ -12,9 +12,7 @@ class TurtleBotAudio():
         rospy.init_node('turtlebot_audio')
         self.sound_client = SoundClient()
 
-        rospack = rospkg.RosPack()
-        ws_path = rospack.get_path(pkg_name)
-        sound_path = ws_path + "/scripts/" + playfile
+        sound_path = our_path + playfile
 	print(sound_path)
 
         self.sound = self.sound_client.waveSound(sound_path)

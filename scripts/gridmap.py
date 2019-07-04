@@ -3,13 +3,12 @@ from matplotlib import pyplot as plt
 import numpy as np
 from parameters import *
 
-im = cv2.imread(map_name)
+im = cv2.imread(our_path + map_name)
 
 rows, colums, chanel = im.shape
 map = []
 
-## Loop inicial para ubicar los centros de las grillas.
-## Genera la lista index que tiene las poses de los centros de la grilla (x,y)
+
 for r in range(4, rows+1, 8):
 	map.append([])
 	for c in range(4, colums+1, 8):
@@ -22,7 +21,6 @@ def grid_center(pose):
 
 def get_neighbour(pose):
 	x, y = pose
-	# 'go_north', 'go_south', 'go_east', 'go_west'
 	neighbour = {"go_north": (x, y-8) if y-8 > 0 else None,
 				 "go_south": (x, y+8) if y+8 < rows else None,
 				 "go_west": (x-8, y) if x-8 > 0 else None,
@@ -30,14 +28,12 @@ def get_neighbour(pose):
 	return neighbour
 
 def check_wall(img, pose, objetive):
-	## funcion que determina si hay o no muralla entre dos poses, esas poses corresponden
-	## a los valores centrales de la grilla obtenidos anteriormente.
 	orientation = tuple(np.subtract(pose, objetive))
 	functions = {"(8, 0)": west, "(-8, 0)": east, "(0, 8)": north , "(0, -8)": south}
 	wall = functions[str(orientation)](img, pose, objetive)
 	return wall
 
-## Funciones de callback dependentiendo el caso de orientacion entre puntos.
+
 
 def north(img, pose, objetive):
 	x, y = pose
@@ -61,10 +57,6 @@ def east(img, pose, objetive):
 
 
 if __name__ == '__main__':
-	# Vecinos:  {'go_north': (4, 4), 'go_south': (4, 20), 'go_west': None, 'go_east': (12, 12)}
-	# inicio, fin = (4, 12), (-4, 12)
-	# wall = check_wall(im, inicio, fin)
-	# print("Wall: ", wall)
 
 	im[12, 4] = [1,1,255]
 	im[4, 20] = [1,1,255]

@@ -92,7 +92,7 @@ class Turtlebot(object):
 			## request actual location
 			self.pos_actual = None
 			self.beginning_pub.publish(True)
-			while not self.pos_actual and not rospy.is_shutdown()):
+			while (not self.pos_actual and not rospy.is_shutdown()):
 				self.r.sleep()
 
 			## ask for path
@@ -172,6 +172,10 @@ class Turtlebot(object):
 			self.r.sleep()
 		self.in_route = True
 		rospy.sleep(2)
+	def target_reached_callback(self,data):
+		self.flag = data.data
+		self.reset_pub.publish(True)
+		print('incoming flag :',data.data)
 
 
 if __name__ == '__main__':
