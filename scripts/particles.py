@@ -6,6 +6,7 @@ import time
 from data_to_image import image_preprocess,generate_cartesian_matrix,rotate_and_center,nothing_value,threshold
 from corr_functions import *
 from parameters import *
+from util import grad_fix
 
 
 possible_locations = None
@@ -114,6 +115,7 @@ def desplazar_particulas(particles, mu_r,mu_ang):
 
         ## angle movement`
         new_angle = np.random.normal(mu_ang, sigma_ang*mu_ang + np.pi/20, 1)[0]
+	new_angle  = grad_fix(new_angle)
 
         particle[0] = (particle[0][0] + y_var, particle[0][1] + x_var)
         particle[1] += new_angle

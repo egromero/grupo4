@@ -20,7 +20,6 @@ class TurtleBotAudio():
         self.sound = self.sound_client.waveSound(sound_path)
 	rospy.sleep(2)
 
-	self.sound.play()	
         self.play_sub = rospy.Subscriber("music", Bool, self.play_sound_cb)
         print("Subscribing to music")
         while self.play_sub.get_num_connections() < 1 and not rospy.is_shutdown():

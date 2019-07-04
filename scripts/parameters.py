@@ -5,18 +5,19 @@ sufix = '.txt'
 
 
 pkg_name = 'g4p'
-playfile = 'ff_fanfare.wav'
+playfile = 'ff_fanfare2.wav'
 
 
 check_max = False
 
-N = 300
-n_angles = 12
+N = 600
+n_angles = 10
 sigma = 2
 ## reduces image to show, consider when observing new initial_pos
 offset_pos = 120
-initial_pos = [135+offset_pos,135+offset_pos]
-radio = 30 #initial radius (particle gen)
+initial_pos = None
+#[135+offset_pos,135+offset_pos]
+radio = 50 #initial radius (particle gen)
 percent = 0.8
 r = 20 #found oneself radius
 
