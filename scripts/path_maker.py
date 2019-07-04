@@ -1,8 +1,10 @@
-from gridmap import *
+#!/usr/bin/env python
+import rospy
 import numpy as np
 import cv2
-from parameters import *
 
+from parameters import *
+from gridmap import *
 
 class State( object ):
 

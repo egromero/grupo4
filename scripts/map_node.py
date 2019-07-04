@@ -92,7 +92,7 @@ class Map():
         self.x_mean_loc = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
         self.y_mean_loc = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         pos_mean = (self.y_mean_loc+offset_pos, self.x_mean_loc+offset_pos)
-	    coords = [cord for cord,angle in particles]
+	coords = [cord for cord,angle in particles]
         tree = spatial.KDTree(coords)
         in_place = tree.query_ball_point(pos_mean, radio)
         angles = [particles[i] for i in in_place]
@@ -141,7 +141,7 @@ class Map():
 
     def move_particles(self,data):
         self.move_data = json.loads(data.data)
-	    print('recieve data :'  ,self.move_data)
+	print('recieve data :'  ,self.move_data)
         self.move_data_flag = True
 
 

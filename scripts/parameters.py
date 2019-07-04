@@ -31,9 +31,11 @@ n_angles = 10
 sigma = 2
 
 
+in_pos = [4,4]
 offset_pos = 120 # reduces image to show, consider when observing new initial_pos
-initial_pos = [4*ratio+magic_number,4*ratio+magic_number]
-radio = 50 #initial radius (particle gen)
+pixel_offset = 1 # in case original map has pixel borders
+initial_pos = [(in_pos[0]+pixel_offset)*ratio+magic_number,(in_pos[1]+pixel_offset)*ratio+magic_number]
+radio = 35 #initial radius (particle gen)
 percent = 0.8
 std_target = 20
 r = 20 #found oneself radius
