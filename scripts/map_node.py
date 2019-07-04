@@ -91,10 +91,10 @@ class Map():
         length = float(len(self.particles))
         self.x_mean_loc = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
         self.y_mean_loc = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
-    coords = [cord for cord,angle in particles]
-        x, y = np.array([x for x, y in coords]), np.array([y for x, y in coords])
-        r2 = (x - self.x_mean_loc)**2 + (y - self.y_mean_loc)**2
-        in_place = np.where(r2 <= radio**2)[0]
+        pos_mean = (self.y_mean_loc+offset_pos, self.x_mean_loc+offset_pos)
+	coords = [cord for cord,angle in particles]
+        tree = spatial.KDTree(coords)
+        in_place = tree.query_ball_point(pos_mean, radio)
         angles = [particles[i] for i in in_place]
         std_dev = np.std(angles)
 
