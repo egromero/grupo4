@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import numpy as np
+from util import pi_fix
 from scipy import spatial
 import matplotlib.pyplot as plt
 import json
@@ -19,7 +20,7 @@ class Map():
 
         self.new_data_flag = False
         self.take_data_flag = False
-        self.on = False
+        self.on = False ##main program is running
         self.move_data_flag = False
         self.localized = False ## localized flag
 
@@ -34,6 +35,10 @@ class Map():
         rospy.Subscriber('/scan',LaserScan,self.scanner_data)
         rospy.Subscriber('image_take',Bool,self.take_data)
         rospy.Subscriber('state_change',String,self.move_particles)
+
+        # Conect to Main
+        self.initial_pub = rospy.Publisher('initial_pos',String,queue_size=10)
+        rospy.Subscriber('ask_beginning',Bool,self.get_x_y)
 
         ## Process map and initial particles, and then send flag for initial movements
     	while (not self.on and not rospy.is_shutdown()):
@@ -83,16 +88,23 @@ class Map():
         self.on = True
 
     def found_place(self, particles, radio):
-	length = float(len(self.particles))
+        length = float(len(self.particles))
         self.x_mean_loc = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
         self.y_mean_loc = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         pos_mean = (self.y_mean_loc+offset_pos, self.x_mean_loc+offset_pos)
-	coords = [cord for cord,angle in particles]
+	    coords = [cord for cord,angle in particles]
         tree = spatial.KDTree(coords)
         in_place = tree.query_ball_point(pos_mean, radio)
         if len(in_place)/len(particles) >= percent:
             return True
 
+    def get_x_y(self, data):
+        self.x_mean_loc = int(np.sum([(particle[0][1])/length for particle in self.particles]))
+        self.y_mean_loc = int(np.sum([(particle[0][0])/length for particle in self.particles]))
+        angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
+        pos_mean = (self.x_mean_loc, self.y_mean_loc, angle_mean)
+        encoded = json.dumps(pos_mean)
+        self.initial_pub.publish(encoded)
 
     def show_image(self):
         copy_n = np.copy(self.global_map)
@@ -108,8 +120,9 @@ class Map():
         x_mean = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
         y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
-	plt.figure()
-	plt.imshow(copy_n[offset_pos:rows-offset_pos,offset_pos:rows-offset_pos])
+
+        plt.figure()
+    	plt.imshow(copy_n[offset_pos:rows-offset_pos,offset_pos:rows-offset_pos])
         plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
         plt.show()
 
@@ -125,8 +138,9 @@ class Map():
 
     def move_particles(self,data):
         self.move_data = json.loads(data.data)
-	print('recieve data :'  ,self.move_data)
+	    print('recieve data :'  ,self.move_data)
         self.move_data_flag = True
+
 
 
 if __name__ == '__main__':
