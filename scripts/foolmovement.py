@@ -16,7 +16,7 @@ class FoolMovement():
 		self.mover = rospy.Publisher( '/cmd_vel_mux/input/navi', Twist, queue_size=10 )
 		self.move_cmd = Twist()
 		rospy.Subscriber( '/camera/depth/image', Image, self.measure)
-	
+
 	def straight(self):
 		self.move_cmd.linear.x = 0.2
 		self.move_cmd.angular.z = 0
@@ -40,15 +40,7 @@ class FoolMovement():
 		while not localizate and not self.obstacle:
 			if rospy.Time.now().to_sec()-tm < 1.5:
 				self.straight()
-				
+
 		## Falta los tiempos para girar, sensar, si tengo espacio, avanzo si no me devuelvo y sigo mi camino
-		## además si tiene obstaculo adelante, girar a la izquierda. 
+		## además si tiene obstaculo adelante, girar a la izquierda.
 		## Para giro usar swing("RIHT") o "LEFT"
-
-
-
-
-
-
-
-

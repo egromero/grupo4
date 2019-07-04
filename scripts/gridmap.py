@@ -46,5 +46,3 @@ def east(img, pose, objetive):
 plt.imshow(im)
 print(check_wall(im, (12,4), (20,4)))
 plt.show()
-
-

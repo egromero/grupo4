@@ -12,11 +12,6 @@ from particles import *
 from parameters import *
 
 
-
-
-
-
-
 class Map():
     def __init__(self):
         self.data = None
@@ -24,7 +19,7 @@ class Map():
 
         self.new_data_flag = False
         self.take_data_flag = False
-        self.on = False ##main program is running
+        self.on = False
         self.move_data_flag = False
         self.localized = False ## localized flag
 
@@ -134,30 +129,7 @@ class Map():
         self.move_data_flag = True
 
 
-
 if __name__ == '__main__':
 	rospy.init_node( "map_node" )
 	handler = Map()
 	rospy.spin()
-
-#
-# ## Compute origin particles
-# particles = np.array(original_particle_gen(N,global_map))
-# # print(particles[0])
-#
-# ## paint particle in global image
-# ## note: should make a copy of global map for this
-# for i in range(10):
-#     tic = time.time()
-#     weights = get_weights(particles, cartesian_matrix, global_map,'ccoeff_norm')
-#     weights = weights/np.sum(weights)
-#     toc = time.time()-tic
-#     print('Time for getting weight of all particles: ',toc)
-#
-#     tic = time.time()
-#     particles = redistribute(particles, weights)
-#     toc = time.time()-tic
-#     print('Time for getting new distribution of all particles: ',toc)
-#
-#
-#

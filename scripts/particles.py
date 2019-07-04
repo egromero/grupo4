@@ -129,20 +129,15 @@ with open(path+name+sufix) as file:
         gen = map(float,line.rstrip(')\n').lstrip('(').split(','))
         data.append(list(gen))
 sample = data[2]
-
 get_position(sample, 1)
-
 # plt.figure()
 # plt.imshow(cartesian_matrix)
-
 ## paint particle in global image
 copy_n = np.copy(global_map)
 for particle in particles:
     copy_n[particle[0][0],particle[0][1]] = 2
-
 plt.imshow(copy_n)
 plt.show()
-
 f, axarr = plt.subplots(2,1)
 axarr[0].imshow(copy_n)
 axarr[1].imshow(copy_n)

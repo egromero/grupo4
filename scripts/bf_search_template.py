@@ -1,7 +1,11 @@
 #
 # State in graph ( cell )
+<<<<<<< HEAD
 
 
+=======
+#
+>>>>>>> 49393d9cd9ddb9044b9c16eb273cfe3d97f268da
 class State( object ):
 
   def __init__( self, node_id, pixmap, cell_size = (7, 7) ):
@@ -14,7 +18,10 @@ class State( object ):
   # IMPLEMENT ME!
   def expand( self ):
     successors = list()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 49393d9cd9ddb9044b9c16eb273cfe3d97f268da
     # Step 1: Convert from the cell's coordinate (x, y) to the cell's central pixel of map image (x_pix, y_pix).
     # Step 2: Determine whether exist a wall between the current cell's central pixel and the adjacent cell's
     #         central pixel, based on the pixel's values between centers.

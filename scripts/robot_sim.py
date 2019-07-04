@@ -5,8 +5,6 @@ from particles import *
 from collections import Counter
 
 
-
-
 ##open sample data
 data = [] # file reader, wont matter later
 with open(path+name+sufix) as file:
@@ -20,7 +18,6 @@ global_map = image_preprocess()
 particles = original_particles_gen(N,n_angles,global_map)
 toc = time.time()-tic
 print('Time for image preprocessing + origin particles: ',toc)
-
 
 
 ##generate cartesian matrix
@@ -40,7 +37,6 @@ for i,sample in enumerate(data):
         copy_n[particle[0][0],particle[0][1]] = 2
 
 
-
 x_mean = np.sum([coords[1]/len(particles) for [coords,angle] in particles])
 y_mean = np.sum([coords[0]/len(particles) for [coords,angle] in particles])
 angle_mean = np.sum([(angle-360)/len(particles) for [coords,angle] in particles])
@@ -53,7 +49,7 @@ plt.show()
 toc = time.time()-tic
 print(Counter(particles))
 print('Time for cartesian full matrix generation: ',toc)
-#
+
 # ## Compute origin particles
 # particles = np.array(original_particle_gen(N,global_map))
 # # print(particles[0])
@@ -71,6 +67,4 @@ print('Time for cartesian full matrix generation: ',toc)
 #     particles = redistribute(particles, weights)
 #     toc = time.time()-tic
 #     print('Time for getting new distribution of all particles: ',toc)
-#
-#
 #

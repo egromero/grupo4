@@ -48,13 +48,13 @@ class Turtlebot(object):
 		## wait for map and initial particles
 		self.on_pub.publish(True)
 
-
 		## wait for global map setup.
 		self.music_pub.publish(True)
 		while (not self.image_flag and not rospy.is_shutdown()):
 			self.r.sleep()
 
 		self.absolute_obstacle_flag = True ## Allow obstacles
+
 
 		## localize oneself loop
 		while not rospy.is_shutdown() and not self.localized:
