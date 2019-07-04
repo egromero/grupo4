@@ -98,8 +98,8 @@ class Turtlebot(object):
 			while (not self.path and not rospy.is_shutdown()):
 				self.r.sleep()
 
-			for point in self.path:
-				self.target_wait(point)
+			for x, y in self.path:
+				self.target_wait((x, y, None))
 
 	def localized_callback(self,data):
 		if data.data:
