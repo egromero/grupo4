@@ -50,6 +50,7 @@ class Turtlebot(object):
 
 
 		## wait for global map setup.
+		self.music_pub.publish(True)
 		while (not self.image_flag and not rospy.is_shutdown()):
 			self.r.sleep()
 
