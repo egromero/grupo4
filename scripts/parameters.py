@@ -3,12 +3,12 @@ import rospkg
 rospack = rospkg.RosPack()
 our_path = rospack.get_path('g4p')
 our_path += '/scripts'
-map_name = "/map.pgm"
+map_name = "/maps/map.pgm"
 pkg_name = 'g4p'
 playfile = '/ff_fanfare2.wav'
 
-in_pos = [4,4]
-places_to_be = [(20,20)] # Psocion del cafe y de la oficina
+in_pos = [20,20]
+places_to_be = [(36,20)] # Psocion del cafe y de la oficina
 
 ## Used for initial map generation
 N = 300
