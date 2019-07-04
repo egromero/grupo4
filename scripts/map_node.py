@@ -89,18 +89,14 @@ class Map():
         self.y_mean_loc = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         pos_mean = (self.y_mean_loc+offset_pos, self.x_mean_loc+offset_pos)
 	coords = [cord for cord,angle in particles]
-	try:
-	        tree = spatial.KDTree(coords,leafsize=15)
-        	in_place = tree.query_ball_point(pos_mean, radio)
+        x, y = np.array([x for x, y in coords]), np.array([y for x, y in coords])
+        r2 = (x - self.x_mean_loc)**2 + (y - self.y_mean_loc)**2
+        in_place = np.where(r2 <= radio**2)[0]
+        angles = [particles[i][1] for i in in_place]
+        std_dev = np.std(angles)
+        if (len(in_place)/len(particles) >= percent) and std_dev<std_target:
+            return True
 
-	        angles = [particles[i][1] for i in in_place]
-	        std_dev = np.std(angles)
-		print('std_dev = :',std_dev)
-	        if (len(in_place)/len(particles) >= percent) and std_dev<std_target:
-	            return True
-
-	except RuntimeError:
-		return True
     def get_x_y(self, data):
         self.x_mean_loc = int(np.sum([(particle[0][1])/length for particle in self.particles]))
         self.y_mean_loc = int(np.sum([(particle[0][0])/length for particle in self.particles]))
