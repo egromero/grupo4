@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import rospy
 import numpy as np
-from util import pi_fix
 from scipy import spatial
 import matplotlib.pyplot as plt
 import json

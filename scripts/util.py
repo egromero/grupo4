@@ -12,6 +12,15 @@ def pi_fix(angle_in):
         sub = angle_in
     return sub
 
+def grad_fix(angle_in):
+    if angle_in<-180:
+        sub = angle_in+360
+    elif angle_in>180:
+        sub = angle_in-360
+    else:
+        sub = angle_in
+    return sub
+
 
 class Timer():
     def __init__(self):
