@@ -1,8 +1,9 @@
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
+from parameters import *
 
-im = cv2.imread("map.pgm")
+im = cv2.imread(map_name)
 
 rows, colums, chanel = im.shape
 map = []

@@ -1,8 +1,7 @@
 import numpy as np
-path = 'Measures/'
-name = 'measures_0'
-sufix = '.txt'
+map_name = "map.pgm"
 
+places_to_be = [(), ()] # Psocion del cafe y de la oficina
 
 pkg_name = 'g4p'
 playfile = 'ff_fanfare2.wav'
@@ -19,6 +18,7 @@ initial_pos = None
 #[135+offset_pos,135+offset_pos]
 radio = 50 #initial radius (particle gen)
 percent = 0.8
+std_target = 20
 r = 20 #found oneself radius
 
 

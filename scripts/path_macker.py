@@ -1,9 +1,7 @@
 from gridmap import *
 import numpy as np
 import cv2
-
-
-map = 'map.pgm'
+from parameters import *
 
 
 class State( object ):
@@ -93,7 +91,7 @@ class Camino():
 
     def get_path(self, data):
         self.inicio, self.fin = json.loads(data.data)
-        puntos = self.func(map, self.inicio, self.fin)
+        puntos = self.func(map_name, self.inicio, self.fin)
         encoded = json.dumps(puntos)
 		self.target_publisher.publish(encoded)
 

@@ -3,12 +3,12 @@ import rospy
 import json
 import numpy as np
 from util import grad_fix, pi_fix
+from parameters import *
 
 from std_msgs.msg import String, Bool
 
 
 repeat_route = [0.5,0,None]
-places_to_be = [(), ()] # Psocion del cafe y de la oficina
 
 class Turtlebot(object):
 	def __init__( self ):

@@ -87,7 +87,7 @@ def generate_cartesian_matrix(data):
 ## Preprocess image for map matching
 def image_preprocess():
     global ratio,magic_number, gaussian_size
-    file_name = our_path + '/map.pgm'
+    file_name = our_path + '/' + map_name
     #print(file_name)
     img = cv2.imread(file_name,0)
 
