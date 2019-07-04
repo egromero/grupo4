@@ -49,6 +49,7 @@ class Map():
         toc = time.time()-tic
         print('Time for image preprocessing + origin particles: ',toc)
         self.image_done_pub.publish(True)
+        self.show_image()
 
         while not rospy.is_shutdown():
             while not self.new_data_flag:
@@ -94,7 +95,10 @@ class Map():
 	    coords = [cord for cord,angle in particles]
         tree = spatial.KDTree(coords)
         in_place = tree.query_ball_point(pos_mean, radio)
-        if len(in_place)/len(particles) >= percent:
+        angles = [particles[i] for i in in_place]
+        std_dev = np.std(angles)
+
+        if (len(in_place)/len(particles) >= percent) and std_dev<std_target:
             return True
 
     def get_x_y(self, data):
