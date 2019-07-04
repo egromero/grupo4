@@ -2,12 +2,13 @@
 import rospy
 import json
 import numpy as np
-from parameters import *
+from util import pi_fix
+
 from std_msgs.msg import String, Bool
 
 
-initial_route = [0,0,np.pi/3]
 repeat_route = [0.5,0,None]
+places_to_be = [(), ()] # Psocion del cafe y de la oficina
 
 class Turtlebot(object):
 	def __init__( self ):
@@ -17,6 +18,8 @@ class Turtlebot(object):
 		self.image_flag = False ##stay still until data is taken by sensor
 		self.move_allowed_flag = False ## wait for particle redistribution
 		self.localized = False ## Iterate foolishly till localized
+
+		self.places_to_be = places_to_be
 
 
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
@@ -44,9 +47,18 @@ class Turtlebot(object):
 		#control enabler/disabler publisher.
 		self.control_pub = rospy.Publisher('control_enable',Bool,queue_size=1)
 
+		# Path to point pub
+		self.destination_pub = rospy.Publisher('move_to',String,queue_size=10)
+		rospy.Subscriber('path_to_point',String,self.path_callback)
+
+		# Initial pose pub
+		self.beginning_pub = rospy.Publisher('ask_beginning',Bool,queue_size=1)
+		rospy.Subscriber('initial_pos',String,self.initial_callback)
+
 		self.r = rospy.Rate(5)
 		## wait for map and initial particles
 		self.on_pub.publish(True)
+
 
 		## wait for global map setup.
 		self.music_pub.publish(True)
@@ -54,7 +66,6 @@ class Turtlebot(object):
 			self.r.sleep()
 
 		self.absolute_obstacle_flag = True ## Allow obstacles
-
 
 		## localize oneself loop
 		while not rospy.is_shutdown() and not self.localized:
@@ -77,11 +88,38 @@ class Turtlebot(object):
 
 		## main loop once localized
 		while not rospy.is_shutdown():
-			pass
+			self.pos_actual = None
+			self.beginning_pub.publish(True)
+			while not self.pos_actual and not rospy.is_shutdown()):
+				self.r.sleep()
+
+			self.path = None
+			encoded = json.dumps([self.pos_actual, self.places_to_be.pop(0)])
+			self.destination_pub.publish(encoded)
+			while (not self.path and not rospy.is_shutdown()):
+				self.r.sleep()
+
+			for x_og, y_og in self.path:
+				# Convercion de x, y
+				x = x_og - self.pos_actual[0]
+				y = y_og - self.pos_actual[1]
+				ang = self.pos_actual[2]
+
+				self.target_wait((x, y, ang))
+
 	def localized_callback(self,data):
 		if data.data:
 			self.localized = True
 			self.music_pub.publish(True)
+
+	def initial_callback(self, data):
+		if not self.pos_actual:
+			self.pos_actual = json.loads(data.data)
+
+	def path_callback(self, data):
+		if not self.path:
+			self.path = json.loads(data.data)
+
 	def image_callback(self,data):
 		self.image_flag = True
 
@@ -129,10 +167,6 @@ class Turtlebot(object):
 		self.in_route = True
 		rospy.sleep(2)
 
-	def target_reached_callback(self,data):
-		self.flag = data.data
-		self.reset_pub.publish(True)
-		print('incoming flag :',data.data)
 
 if __name__ == '__main__':
 	rospy.init_node( "turtlebot_g4" )
