@@ -2,7 +2,7 @@
 import rospy
 import json
 import numpy as np
-from util import grad_fix
+from util import grad_fix, pi_fix
 
 from std_msgs.msg import String, Bool
 
@@ -101,11 +101,13 @@ class Turtlebot(object):
 
 			for x_og, y_og in self.path:
 				# Convercion de x, y
-				x = self.pos_actual[0] - x_og
-				y = self.pos_actual[1] - y_og
-				ang = self.pos_actual[2] - (np.arctan(y/x))
+				x_R = x_og - self.pos_actual[0]
+				y_R = y_og - self.pos_actual[1]
+				ang = pi_fix(self.pos_actual[2]/360*(2*np.pi) - (np.arctan2(y,x)))
+				r = np.sqrt(x_R**2 + y_R**2)
 
-				self.target_wait((x, y, grad_fix(ang)))
+				x,  = r*np.cos(ang), r*np.sin(ang)
+				self.target_wait([x, y, None])
 
 	def localized_callback(self,data):
 		if data.data:
