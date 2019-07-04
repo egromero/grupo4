@@ -6,22 +6,7 @@ places_to_be = [(), ()] # Psocion del cafe y de la oficina
 pkg_name = 'g4p'
 playfile = 'ff_fanfare2.wav'
 
-
-check_max = False
-
-N = 600
-n_angles = 10
-sigma = 2
-## reduces image to show, consider when observing new initial_pos
-offset_pos = 120
-initial_pos = None
-#[135+offset_pos,135+offset_pos]
-radio = 50 #initial radius (particle gen)
-percent = 0.8
-std_target = 20
-r = 20 #found oneself radius
-
-
+## used by data_to_image
 angles = [0,180]
 window = 65 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
@@ -36,6 +21,25 @@ gaussian_size = 5
 gaussian_flag = True
 nothing_value = 0.1
 threshold = 0.001
+
+# used by particle weighting for debugging
+check_max = False
+
+## Used for initial map generation
+N = 600
+n_angles = 10
+sigma = 2
+
+
+offset_pos = 120 # reduces image to show, consider when observing new initial_pos
+initial_pos = [4*ratio+magic_number,4*ratio+magic_number]
+radio = 50 #initial radius (particle gen)
+percent = 0.8
+std_target = 20
+r = 20 #found oneself radius
+
+
+
 
 rolled = 5
 
