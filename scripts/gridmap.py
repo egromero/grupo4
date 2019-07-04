@@ -2,7 +2,7 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 
-im = cv2.imread("map.pgm")
+im = cv2.imread("map0.pgm")
 
 rows, colums, chanel = im.shape
 map = []
@@ -12,7 +12,7 @@ map = []
 for r in range(4, rows+1, 8):
 	map.append([])
 	for c in range(4, colums+1, 8):
-		im[r, c] = [255,1,1]
+		im[r+1, c+1] = [255,1,1]	# +1 para map0.pgm
 		map[-1].append((r, c))
 
 def grid_center(pose):
@@ -65,7 +65,7 @@ if __name__ == '__main__':
 	# wall = check_wall(im, inicio, fin)
 	# print("Wall: ", wall)
 
-	im[12, 4] = [1,1,255]
-	im[4, 20] = [1,1,255]
+	# im[12, 4] = [1,1,255]
+	# im[4, 20] = [1,1,255]
 	plt.imshow(im)
 	plt.show()
