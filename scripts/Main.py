@@ -2,6 +2,7 @@
 import rospy
 import json
 import numpy as np
+from util import pi_fix
 
 from std_msgs.msg import String, Bool
 
@@ -98,8 +99,13 @@ class Turtlebot(object):
 			while (not self.path and not rospy.is_shutdown()):
 				self.r.sleep()
 
-			for x, y in self.path:
-				self.target_wait((x, y, None))
+			for x_og, y_og in self.path:
+				# Convercion de x, y
+				x = x_og - self.pos_actual[0]
+				y = y_og - self.pos_actual[1]
+				ang = self.pos_actual[2]
+
+				self.target_wait((x, y, ang))
 
 	def localized_callback(self,data):
 		if data.data:

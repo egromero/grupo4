@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import numpy as np
+from util import pi_fix
 from scipy import spatial
 import matplotlib.pyplot as plt
 import json
@@ -100,7 +101,8 @@ class Map():
     def get_x_y(self, data):
         self.x_mean_loc = int(np.sum([(particle[0][1])/length for particle in self.particles]))
         self.y_mean_loc = int(np.sum([(particle[0][0])/length for particle in self.particles]))
-        pos_mean = (self.x_mean_loc, self.y_mean_loc)
+        angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
+        pos_mean = (self.x_mean_loc, self.y_mean_loc, angle_mean)
         encoded = json.dumps(pos_mean)
         self.initial_pub.publish(encoded)
 
