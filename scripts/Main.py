@@ -19,7 +19,6 @@ class Turtlebot(object):
 		self.localized = False ## Iterate foolishly till localized
 
 		self.places_to_be = places_to_be
-		self.pos_actual = () # Posición inicial del robot
 
 
 		self.target_publisher = rospy.Publisher('new_target',String,queue_size=10)
@@ -50,6 +49,10 @@ class Turtlebot(object):
 		# Path to point pub
 		self.destination_pub = rospy.Publisher('move_to',String,queue_size=10)
 		rospy.Subscriber('path_to_point',String,self.path_callback)
+
+		# Initial pose pub
+		self.beginning_pub = rospy.Publisher('ask_beginning',Bool,queue_size=1)
+		rospy.Subscriber('initial_pos',String,self.initial_callback)
 
 		self.r = rospy.Rate(5)
 		## wait for map and initial particles
@@ -84,6 +87,11 @@ class Turtlebot(object):
 
 		## main loop once localized
 		while not rospy.is_shutdown():
+			self.pos_actual = None
+			self.beginning_pub.publish(True)
+			while not self.pos_actual and not rospy.is_shutdown()):
+				self.r.sleep()
+
 			self.path = None
 			encoded = json.dumps([self.pos_actual, self.places_to_be.pop(0)])
 			self.destination_pub.publish(encoded)
@@ -97,6 +105,10 @@ class Turtlebot(object):
 		if data.data:
 			self.localized = True
 			self.music_pub.publish(True)
+
+	def initial_callback(self, data):
+		if not self.pos_actual:
+			self.pos_actual = json.loads(data.data)
 
 	def path_callback(self, data):
 		if not self.path:

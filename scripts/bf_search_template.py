@@ -103,6 +103,9 @@ class Camino():
         vect_img2map = np.vectorize( img2map )
         ros_map = vect_img2map( map_img, 0.65, 0.196 )
 
+        # Centrar
+        cell_s, cell_g = grid_center(cell_s), grid_center(cell_g)
+
         s0 = State( cell_s, ros_map ) # Initial state in graph
         sg = State( cell_g, ros_map ) # Goal state in graph
         # print( 'Going from %s to %s\n' % ( s0, sg ) )
