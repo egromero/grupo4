@@ -2,8 +2,8 @@
 import rospy
 import numpy as np
 from scipy import spatial
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import json
@@ -25,6 +25,7 @@ class Map():
         self.on = False ##main program is running
         self.move_data_flag = False
         self.localized = False ## localized flag
+
 
         self.image_done_pub = rospy.Publisher('image_done',Bool,queue_size = 1)
         rospy.Subscriber('main_on',Bool,self.on_callback)
@@ -53,17 +54,23 @@ class Map():
         print('Time for image preprocessing + origin particles: ',toc)
         self.image_done_pub.publish(True)
         self.show_image()
-
+	print(initial_pos)
+	
+	##main loop
         while not rospy.is_shutdown():
-            while not self.new_data_flag:
+            while not self.new_data_flag and not rospy.is_shutdown():
                 rospy.sleep(1)
             print('got data')
             cartesian_matrix = generate_cartesian_matrix(self.data)
             print('cartesian matrix complete')
             self.new_data_flag = False
-            weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
-            self.particles = redistribute(self.particles,weights)
-            print('weighting and redistribution complete')
+	    if not cartesian_matrix:
+		weights = (np.ones(len(self.particles))/len(self.particles)).tolist()
+		print('Medition ignored, all particle')
+	    else:
+                weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
+            	self.particles = redistribute(self.particles,weights)
+                print('weighting and redistribution complete')
             self.image_done_pub.publish(True)
             if self.found_place(self.particles, r):
                 self.show_image()
@@ -73,7 +80,7 @@ class Map():
                     self.localized_pub.publish(True)
 
 
-            while not self.move_data_flag:
+            while not self.move_data_flag and not rospy.is_shutdown():
                 rospy.sleep(1)
 
             self.particles = desplazar_particulas(self.particles,self.move_data[0],self.move_data[1]*360/(2*np.pi))
@@ -124,10 +131,11 @@ class Map():
         y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
 
+	plt.close()
         plt.figure()
-    	plt.imshow(copy_n[offset_pos:rows-offset_pos,offset_pos:rows-offset_pos])
+    	plt.imshow(copy_n[offset_pos:rows-offset_pos,offset_pos:cols-offset_pos])
         plt.arrow(x_mean,y_mean,np.cos(angle_mean/360*2*np.pi)*20,-np.sin(angle_mean/360*2*np.pi)*20,width = 0.3)
-        plt.show()
+        plt.show(block=False)
 
     def take_data(self,data):
         self.take_data_flag = True

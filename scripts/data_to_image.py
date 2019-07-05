@@ -55,7 +55,6 @@ def generate_radial_matrix(data):
     global resolution,max_r,magic_number,angles
     radial_vector = np.arange(0,max_r+resolution,resolution)
     radial_matrix = np.zeros([magic_number+1,angles[1]-angles[0]+1])
-
     for i in range(angles[1]-angles[0]+1):
         binary_vector = radial_vector>data[i]
         rolled_vector = np.roll(binary_vector,3)
@@ -69,17 +68,19 @@ def generate_radial_matrix(data):
 ## Generate cartesian matrix
 def generate_cartesian_matrix(data):
     global max_r,resolution,magic_number
+    if radius_filter(data):
+	    radial_matrix = generate_radial_matrix(data)
+	    cart_matrix = np.mgrid[-max_r:max_r+resolution:resolution,0:max_r+resolution:resolution].reshape(2,-1).T
+	    end_vector = [remap(radial_matrix,item) for item in cart_matrix]
+	    end_matrix = np.reshape(np.array(end_vector),[(magic_number+1)*2-1,magic_number+1])
 
-    radial_matrix = generate_radial_matrix(data)
-    cart_matrix = np.mgrid[-max_r:max_r+resolution:resolution,0:max_r+resolution:resolution].reshape(2,-1).T
-    end_vector = [remap(radial_matrix,item) for item in cart_matrix]
-    end_matrix = np.reshape(np.array(end_vector),[(magic_number+1)*2-1,magic_number+1])
-
-    rows,cols = end_matrix.shape
-    extra_matrix = np.ones([rows,cols-1])*nothing_value
-    end_matrix = np.concatenate((extra_matrix,end_matrix),axis=1)
-
-    return end_matrix
+	    rows,cols = end_matrix.shape
+	    extra_matrix = np.ones([rows,cols-1])*nothing_value
+	    end_matrix = np.concatenate((extra_matrix,end_matrix),axis=1)
+	
+	    return end_matrix
+    else:
+	return None
 
 ## Preprocess image for map matching
 def image_preprocess():
@@ -88,23 +89,28 @@ def image_preprocess():
     #print(file_name)
     img = cv2.imread(file_name,0)
 
-    ## change into 0-1 values
+    ## change into 0-1 values	
+
     img = (img == 0)*1 + (img==205)*nothing_value
-
-
+    #print(img.shape)
+	
     ## resize into correct resolution
     rows,cols = img.shape
-    img = cv2.resize(img,(int(rows*ratio),int(cols*ratio)))
+    img = cv2.resize(img,(int(cols*ratio),int(rows*ratio)))
+    
     ## gaussian blur
     if gaussian_flag:
         img = cv2.GaussianBlur(img,(gaussian_size,gaussian_size),0)
 
     ## make a bigger image so the windows never go out of bounds
     rows,cols = img.shape
+
     new_img = np.ones([rows+2*magic_number,cols+2*magic_number])*nothing_value
 
     rows,cols = new_img.shape
     new_img[magic_number:rows-magic_number,magic_number:cols-magic_number] = img
+    #plt.imshow(new_img)
+    #plt.show()
 
     return new_img
 
