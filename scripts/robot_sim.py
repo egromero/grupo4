@@ -6,7 +6,9 @@ from collections import Counter
 from parameters import *
 
 
-fig = plt.figure()
+not_wall = 10
+too_many = 10
+
 
 ##open sample data
 data = [] # file reader, wont matter later
@@ -15,37 +17,28 @@ with open(path+name+sufix) as file:
         gen = map(float,line.rstrip(')\n').lstrip('(').split(','))
         data.append(list(gen))
 
-##preprocess image
-tic = time.time()
-global_map = image_preprocess()
-plt.imshow(global_map)
-plt.show(block=False)
-particles = original_particles_gen(N,n_angles,global_map)
-toc = time.time()-tic
-print('Time for image preprocessing + origin particles: ',toc)
-for i in range(10000000):
-    print(i)
-plt.show()
+
+sample = data[0][58:len(data[0])-56]
 
 """
-## Muestra por 1 seg y luego sigue
-plt.ion()
-plt.show()
+# Filter by counting 20s
+vector = np.array(sample)
+a = len(np.where(vector == 20)[0])
+if a >= too_many:
+    print("No sirve")
+else:
+    print("Sirve")
 
-##open sample data
-data = [] # file reader, wont matter later
-with open(path+name+sufix) as file:
-    for line in file:
-        gen = map(float,line.rstrip(')\n').lstrip('(').split(','))
-        data.append(list(gen))
-
-##preprocess image
-tic = time.time()
-global_map = image_preprocess()
-plt.imshow(global_map)
-plt.pause(1)
-# plt.show()
-particles = original_particles_gen(N,n_angles,global_map)
-toc = time.time()-tic
-print('Time for image preprocessing + origin particles: ',toc)
 """
+
+# Filter by comparing particles
+vector = np.array(sample)
+rolled_vector = np.roll(vector, 1)[1:]
+rolled_vector = np.insert(rolled_vector, 0, 0)
+total = np.abs(vector - rolled_vector)
+
+a = len(np.where(total >= not_wall)[0])
+if a >= too_many:
+    print("No sirve")
+else:
+    print("Sirve")

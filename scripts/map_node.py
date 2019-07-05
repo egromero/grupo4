@@ -60,6 +60,9 @@ class Map():
             print('pre_imshow1')
             plt.figure()
             plt.imshow(cartesian_matrix)
+
+            # Filtrar si sirve o no
+
             print('pre_weights')
             weights = get_weights(self.particles,cartesian_matrix,self.global_map,'ccoeff_norm')
             self.particles = redistribute(self.particles,weights)
