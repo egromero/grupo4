@@ -1,6 +1,6 @@
 import numpy as np
 path = 'Measures/'
-name = 'measures_0'
+name = 'esquina1'
 sufix = '.txt'
 
 

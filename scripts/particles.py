@@ -26,7 +26,7 @@ def original_particles_gen(N,n_angles,image, pos=None):
     possible_locations = [(index//cols,index%cols) for index in binary_index]
 
     if pos:
-	print(pos)
+        print(pos)
         tree = spatial.KDTree(possible_locations)
         possible_ids = tree.query_ball_point(pos, radio)
 
@@ -45,34 +45,34 @@ def get_weights(particles,cartesian_matrix,global_map,operation='ccoeff_norm'):
         max = 0
     for i,particle in enumerate(particles):
     	if i%1000 == 0:
-		print(i)
-    	coord,angle = particle
-    	y,x = coord
+            print(i)
+            coord,angle = particle
+            y,x = coord
 
-        if in_map(particle, possible_locations):
-            ## new matrix is what the robot 'sees' given an angle
+            if in_map(particle, possible_locations):
+                ## new matrix is what the robot 'sees' given an angle
                 new_matrix, new_center = rotate_and_center(cartesian_matrix,angle)
-	        rows,cols = new_matrix.shape
+                rows,cols = new_matrix.shape
 
-            ## fake center reprecents the [0,0] of the window
-        	fake_center = (y-new_center[0],x-new_center[1])
+                ## fake center reprecents the [0,0] of the window
+                fake_center = (y-new_center[0],x-new_center[1])
 
-            ##window is the matching part of global map to what the robot sees given an angle.
-        	window = global_map[fake_center[0]:fake_center[0]+rows,fake_center[1]:fake_center[1]+cols]
-            ## correlation calculacion
-        	w = matrix_corr(window,new_matrix,operation)
+                ##window is the matching part of global map to what the robot sees given an angle.
+                window = global_map[fake_center[0]:fake_center[0]+rows,fake_center[1]:fake_center[1]+cols]
+                ## correlation calculacion
+                w = matrix_corr(window,new_matrix,operation)
 
-        else:
-	        w = 0
+            else:
+                w = 0
 
-        weights[i] = w
+            weights[i] = w
 
-        ## check favorite to see if correlation is working
-        if check_max:
-	        if w>max:
-	            max = w
-                favorite_window = window
-                favorite_image = new_matrix
+            ## check favorite to see if correlation is working
+            if check_max:
+                if w>max:
+                    max = w
+                    favorite_window = window
+                    favorite_image = new_matrix
     weights = weights/np.sum(weights)
     ##Favorite plot
     if check_max:
