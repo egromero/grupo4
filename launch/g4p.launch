@@ -30,14 +30,9 @@
   <node pkg = "g4p" type = "control.py" name = "control" output="screen">
   </node>
 
-  <node pkg = "g4p" type = "scan_from_kinect.py" name="scaner" output = "screen">
-  </node>
 
   <node pkg = "g4p" type = "path_maker.py" name="path_maker" output = "screen">
   </node>
-
-  <node pkg="tf" type="static_transform_publisher" name="base_link_to_kinect_frame_nav" args="-0.1 0.0 0.30 -1.570796327 0.0 1.570796327 /base_link /kinect_frame 100" />
-   <include file="$(find openni_launch)/launch/openni.launch" />
 
 
 </launch>
