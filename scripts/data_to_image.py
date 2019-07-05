@@ -7,6 +7,27 @@ from parameters import *
 
 
 
+def filter_noise(sample): # Filter by comparing particles
+    vector = np.array(sample)
+    rolled_vector = np.roll(vector, 1)[1:]
+    rolled_vector = np.insert(rolled_vector, 0, 0)
+    total = np.abs(vector - rolled_vector)
+
+    if len(np.where(total >= not_wall)[0]) >= too_many:
+        print("Demaciado ruido para usar data")
+        return False
+    else:
+        return True
+
+
+def filter_20s(sample): # Filter by counting 20s
+    vector = np.array(sample)
+    if len(np.where(vector == 20)[0]) >= too_many_20s:
+        print("Demaciados 20s para usar data")
+        return False
+    else:
+        return True
+
 ## Bilinear interpolation for radial_matrix -> cartesian matrix transformation
 def pseudo_equal(m,value):
     return np.greater(m,value-threshold)*np.less(m,value+threshold)
@@ -68,7 +89,7 @@ def generate_radial_matrix(data):
 ## Generate cartesian matrix
 def generate_cartesian_matrix(data):
     global max_r,resolution,magic_number
-    if radius_filter(data):
+    if filter_noise(data) and filter_20s(data):
 	    radial_matrix = generate_radial_matrix(data)
 	    cart_matrix = np.mgrid[-max_r:max_r+resolution:resolution,0:max_r+resolution:resolution].reshape(2,-1).T
 	    end_vector = [remap(radial_matrix,item) for item in cart_matrix]
@@ -77,7 +98,7 @@ def generate_cartesian_matrix(data):
 	    rows,cols = end_matrix.shape
 	    extra_matrix = np.ones([rows,cols-1])*nothing_value
 	    end_matrix = np.concatenate((extra_matrix,end_matrix),axis=1)
-	
+
 	    return end_matrix
     else:
 	return None
@@ -89,15 +110,15 @@ def image_preprocess():
     #print(file_name)
     img = cv2.imread(file_name,0)
 
-    ## change into 0-1 values	
+    ## change into 0-1 values
 
     img = (img == 0)*1 + (img==205)*nothing_value
     #print(img.shape)
-	
+
     ## resize into correct resolution
     rows,cols = img.shape
     img = cv2.resize(img,(int(cols*ratio),int(rows*ratio)))
-    
+
     ## gaussian blur
     if gaussian_flag:
         img = cv2.GaussianBlur(img,(gaussian_size,gaussian_size),0)

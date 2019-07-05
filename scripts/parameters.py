@@ -16,6 +16,10 @@ n_angles = 12
 sigma = 2
 
 
+## data for filters
+not_wall = 10
+too_many = 10
+too_many_20s = 10
 
 ## used by data_to_image
 angles = [0,180]
