@@ -6,10 +6,6 @@ from collections import Counter
 from parameters import *
 
 
-not_wall = 10
-too_many = 10
-
-
 ##open sample data
 data = [] # file reader, wont matter later
 with open(path+name+sufix) as file:
@@ -19,6 +15,10 @@ with open(path+name+sufix) as file:
 
 
 sample = data[0][58:len(data[0])-56]
+
+
+not_wall = 10
+too_many = 10
 
 """
 # Filter by counting 20s
