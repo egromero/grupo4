@@ -12,15 +12,13 @@ from util import grad_fix
 possible_locations = None
 
 
-def in_map(particle, map):
+def in_map(particle, inc_map):
     coords, angle = particle
-    if coords in map:
+    if coords in inc_map:
         return True
 
-
-def original_particles_gen(N,n_angles,image, pos=None):
+def force_particles(N,angle,image, pos=None):
     global possible_locations
-    angles = [360*i/n_angles for i in range(n_angles)]
     rows,cols = image.shape
     image_vector = image.reshape(1,rows*cols)
     binary_index = np.where(image_vector<=nothing_value-threshold)[1]
@@ -36,7 +34,29 @@ def original_particles_gen(N,n_angles,image, pos=None):
             new_possibles.append(possible_locations[i])
         possible_locations = new_possibles
 
-    origin_particles = [(possible_locations[np.random.choice(len(possible_locations))],angle) for i in range(N) for angle in angles+np.random.rand(1)*360/n_angles]
+    origin_particles = [(possible_locations[np.random.choice(len(possible_locations))],angle) for i in range(N)]
+    return np.array(origin_particles)
+
+def original_particles_gen(N,n_angles,image, pos=None):
+    global possible_locations
+    angles = [360*i/n_angles for i in range(n_angles)]
+    rows,cols = image.shape
+    image_vector = image.reshape(1,rows*cols)
+    binary_index = np.where(image_vector<=nothing_value-threshold)[1]
+    possible_locations = [(index//cols,index%cols) for index in binary_index]
+    new_possibles = possible_locations
+
+    if pos:
+	print(pos)
+        tree = spatial.KDTree(possible_locations)
+        possible_ids = tree.query_ball_point(pos, radio)
+
+        new_possibles = []
+        for i in possible_ids:
+            new_possibles.append(possible_locations[i])
+        #possible_locations = new_possibles
+
+    origin_particles = [(new_possibles[np.random.choice(len(new_possibles))],angle) for i in range(N) for angle in angles+np.random.rand(1)*360/n_angles]
     return np.array(origin_particles)
 
 def get_weights(particles,cartesian_matrix,global_map,operation='ccoeff_norm'):
@@ -109,16 +129,16 @@ def desplazar_particulas(particles, mu_r,mu_ang):
     print('sigma\'s = :', sigma_r*mu_r, sigma_ang*mu_ang )
     for particle in particles:
         ## radial movement`
-        part_angle = particle[1]/360*2*np.pi
+        part_angle = (particle[1]/360.0)*2*np.pi
         new_radius = np.random.normal(mu_r, sigma_r*abs(mu_r)+ 0.01, 1)[0] / resolution
         x_var, y_var = int(new_radius*np.cos(part_angle)), int(-new_radius*np.sin(part_angle))
-
         ## angle movement`
-        new_angle = np.random.normal(mu_ang, sigma_ang*abs(mu_ang) + np.pi/20, 1)[0]
+        new_angle = np.random.normal(mu_ang, sigma_ang*abs(mu_ang) + 1, 1)[0]
 
         particle[0] = (particle[0][0] + y_var, particle[0][1] + x_var)
         particle[1] += new_angle
     return np.array(particles)
+
 
 
 

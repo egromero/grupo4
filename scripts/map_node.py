@@ -49,7 +49,9 @@ class Map():
 
         tic = time.time()
         self.global_map = image_preprocess()
-        self.particles = original_particles_gen(N,n_angles,self.global_map,initial_pos)
+        #self.particles = original_particles_gen(N,n_angles,self.global_map,initial_pos)
+	self.particles = force_particles(N*n_angles,initial_angle,self.global_map,initial_pos)
+
         toc = time.time()-tic
         print('Time for image preprocessing + origin particles: ',toc)
         self.image_done_pub.publish(True)
@@ -61,10 +63,11 @@ class Map():
             while not self.new_data_flag and not rospy.is_shutdown():
                 rospy.sleep(1)
             print('got data')
-            cartesian_matrix = generate_cartesian_matrix(self.data)
+            is_ok,cartesian_matrix = generate_cartesian_matrix(self.data)
             print('cartesian matrix complete')
+
             self.new_data_flag = False
-	    if not cartesian_matrix:
+	    if not is_ok:
 		weights = (np.ones(len(self.particles))/len(self.particles)).tolist()
 		print('Medition ignored, all particle')
 	    else:
@@ -72,7 +75,7 @@ class Map():
             	self.particles = redistribute(self.particles,weights)
                 print('weighting and redistribution complete')
             self.image_done_pub.publish(True)
-            if self.found_place(self.particles, r):
+            if self.found_place(self.particles, f_radius):
                 self.show_image()
                 print("Localizado en:", self.x_mean_loc, self.y_mean_loc)
                 if not self.localized:
@@ -93,21 +96,33 @@ class Map():
     def on_callback(self,data):
         self.on = True
 
-    def found_place(self, particles, radio):
+    def found_place(self, particles, inc_r):
         length = float(len(self.particles))
-        self.x_mean_loc = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
-        self.y_mean_loc = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
+        self.x_mean_loc = int(np.sum([(particle[0][1])/length for particle in self.particles]))
+        self.y_mean_loc = int(np.sum([(particle[0][0])/length for particle in self.particles]))
         pos_mean = (self.y_mean_loc+offset_pos, self.x_mean_loc+offset_pos)
 	coords = [cord for cord,angle in particles]
-        x, y = np.array([x for x, y in coords]), np.array([y for x, y in coords])
+        y, x = np.array([x for x, y in coords]), np.array([y for x, y in coords])
         r2 = (x - self.x_mean_loc)**2 + (y - self.y_mean_loc)**2
-        in_place = np.where(r2 <= radio**2)[0]
+	print('X real')
+	print(x)
+	print('X promedio')
+	print(self.x_mean_loc)
+	print('distancia cuadrada en x')
+	print((x - self.x_mean_loc)**2)
+	sub_in  = np.where(r2 <= inc_r**2)
+	
+        in_place = sub_in[0]
+	
         angles = [particles[i][1] for i in in_place]
         std_dev = np.std(angles)
-        if (len(in_place)/len(particles) >= percent) and std_dev<std_target:
+	print('Percentage of in circle = {}'.format(len(in_place)/float(len(particles))))
+	print('standard deviaton of angle = {}'.format(std_dev))
+        if (len(in_place)/float(len(particles)) >= percent) and std_dev<std_target:
             return True
 
     def get_x_y(self, data):
+        length = float(len(self.particles))
         self.x_mean_loc = int(np.sum([(particle[0][1])/length for particle in self.particles]))
         self.y_mean_loc = int(np.sum([(particle[0][0])/length for particle in self.particles]))
         angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])
@@ -126,7 +141,7 @@ class Map():
             copy_n[particle[0][0],particle[0][1]] = 2
 	    rows,cols = copy_n.shape
 		#x_mean+= particle[0][0]/lenght
-	    length = float(len(self.particles))
+        length = float(len(self.particles))
         x_mean = int(np.sum([(particle[0][1]-offset_pos)/length for particle in self.particles]))
         y_mean = int(np.sum([(particle[0][0]-offset_pos)/length for particle in self.particles]))
         angle_mean = np.sum([(particle[1])/len(self.particles) for particle in self.particles])

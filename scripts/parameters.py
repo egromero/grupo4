@@ -7,19 +7,20 @@ map_name = "/maps/map.pgm"
 pkg_name = 'g4p'
 playfile = '/ff_fanfare2.wav'
 
-in_pos = [20,20]
-places_to_be = [(36,20)] # Psocion del cafe y de la oficina
+in_pos = [20,40]
+places_to_be = [(20,20)] # Psocion del cafe y de la oficina
 
 ## Used for initial map generation
 N = 300
 n_angles = 12
 sigma = 2
+initial_angle = -110
 
 
 ## data for filters
-not_wall = 10
-too_many = 10
-too_many_20s = 10
+not_wall = 0.15
+too_many = 4
+too_many_20s = 5
 
 ## used by data_to_image
 angles = [0,180]
@@ -27,7 +28,7 @@ window = 65 # add and substract to limits of angles.
 valid = [angles[0]+window,angles[1]-window]
 max_r = 2.5 # max distance, set by sensor
 resolution = 0.02 # resolution of generated image, lower value (more res) = more time expensive
-original_res = 0.12
+original_res = 0.11
 ratio = original_res/resolution
 magic_number = int(max_r/resolution)
 offset = 90
@@ -43,14 +44,13 @@ check_max = False
 
 
 
-
 offset_pos = 120 # reduces image to show, consider when observing new initial_pos
 pixel_offset = 1 # in case original map has pixel borders
 initial_pos = [(in_pos[0]+pixel_offset)*ratio+magic_number,(in_pos[1]+pixel_offset)*ratio+magic_number]
-radio = 45 #initial radius (particle gen)
+radio = 25 #initial radius (particle gen)
 percent = 0.8
 std_target = 20
-r = 20 #found oneself radius
+f_radius = 20 #found oneself radius
 
 
 
@@ -71,5 +71,5 @@ lin_speed = 0.1
 lin_acc = 0.08
 lin_stop = 0.05
 
-sigma_r = 0.1
+sigma_r = 0.03
 sigma_ang = 0.1

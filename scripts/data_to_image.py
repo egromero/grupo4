@@ -8,7 +8,7 @@ from parameters import *
 
 
 def filter_noise(sample): # Filter by comparing particles
-    vector = np.array(sample)
+    vector = np.array(sample[valid[0]:valid[1]])
     rolled_vector = np.roll(vector, 1)[1:]
     rolled_vector = np.insert(rolled_vector, 0, 0)
     total = np.abs(vector - rolled_vector)
@@ -21,7 +21,7 @@ def filter_noise(sample): # Filter by comparing particles
 
 
 def filter_20s(sample): # Filter by counting 20s
-    vector = np.array(sample)
+    vector = np.array(sample[valid[0]:valid[1]])
     if len(np.where(vector == 20)[0]) >= too_many_20s:
         print("Demaciados 20s para usar data")
         return False
@@ -89,23 +89,24 @@ def generate_radial_matrix(data):
 ## Generate cartesian matrix
 def generate_cartesian_matrix(data):
     global max_r,resolution,magic_number
+
+    radial_matrix = generate_radial_matrix(data)
+    cart_matrix = np.mgrid[-max_r:max_r+resolution:resolution,0:max_r+resolution:resolution].reshape(2,-1).T
+    end_vector = [remap(radial_matrix,item) for item in cart_matrix]
+    end_matrix = np.reshape(np.array(end_vector),[(magic_number+1)*2-1,magic_number+1])
+    if gaussian_flag:
+        end_matrix = cv2.GaussianBlur(end_matrix,(gaussian_size,gaussian_size),0)
+
+    rows,cols = end_matrix.shape
+    extra_matrix = np.ones([rows,cols-1])*nothing_value
+    end_matrix = np.concatenate((extra_matrix,end_matrix),axis=1)
     if filter_noise(data) and filter_20s(data):
-	    radial_matrix = generate_radial_matrix(data)
-	    cart_matrix = np.mgrid[-max_r:max_r+resolution:resolution,0:max_r+resolution:resolution].reshape(2,-1).T
-	    end_vector = [remap(radial_matrix,item) for item in cart_matrix]
-	    end_matrix = np.reshape(np.array(end_vector),[(magic_number+1)*2-1,magic_number+1])
-
-	    rows,cols = end_matrix.shape
-	    extra_matrix = np.ones([rows,cols-1])*nothing_value
-	    end_matrix = np.concatenate((extra_matrix,end_matrix),axis=1)
-
-	    return end_matrix
+	return [True,end_matrix]
     else:
-	return None
+	return [False,end_matrix]
 
 ## Preprocess image for map matching
 def image_preprocess():
-    global ratio,magic_number, gaussian_size
     file_name = our_path + map_name
     #print(file_name)
     img = cv2.imread(file_name,0)
@@ -122,6 +123,7 @@ def image_preprocess():
     ## gaussian blur
     if gaussian_flag:
         img = cv2.GaussianBlur(img,(gaussian_size,gaussian_size),0)
+	
 
     ## make a bigger image so the windows never go out of bounds
     rows,cols = img.shape
@@ -140,7 +142,7 @@ def rotate_and_center(inc_matrix,angle):
     global magic_number
 
     ## Reduce cartsian matrix
-    rows,cols = inc_matrix.shape
+    rows,cols = inc_matrix.shape	
     M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
     inc_matrix = cv2.warpAffine(inc_matrix,M,(cols,rows),borderValue=nothing_value,flags =cv2.INTER_NEAREST)
     original_center =  np.array([magic_number ,magic_number])

@@ -2,6 +2,7 @@
 import rospy
 import numpy as np
 import cv2
+import json
 
 from std_msgs.msg import Bool,String
 from parameters import *
@@ -117,5 +118,5 @@ class Camino():
 
 if __name__ == '__main__':
     rospy.init_node('path_maker')
-    path_maker = ()
+    path_maker = Camino()
     rospy.spin()	

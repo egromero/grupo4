@@ -87,22 +87,26 @@ class Turtlebot(object):
 			self.move_allowed_flag = False
 
 		## main loop once localized
-		self.absolute_obstacle_flag = False
+		
 		while not rospy.is_shutdown() and self.places_to_be:
 			## request actual location
+
 			self.pos_actual = None
 			self.beginning_pub.publish(True)
+			print('asking for actual position')
 			while (not self.pos_actual and not rospy.is_shutdown()):
 				self.r.sleep()
-
-			## ask for path
+	
+			## ask for path	
 			self.path = None
 			encoded = json.dumps([self.pos_actual, self.places_to_be.pop(0)])
 			self.destination_pub.publish(encoded)
+			print('asking for route')
 			while (not self.path and not rospy.is_shutdown()):
 				self.r.sleep()
 
 			## execute every movement
+			print('executing movements')
 			for x_og, y_og in self.path:
 				# Convercion de x, y
 				x_R = x_og - self.pos_actual[0]
@@ -111,12 +115,15 @@ class Turtlebot(object):
 				r = np.sqrt(x_R**2 + y_R**2)
 
 				x,  = r*np.cos(ang), r*np.sin(ang)
+				print('waiting until next node')
 				self.target_wait([x, y, None])
 
 	def localized_callback(self,data):
 		if data.data:
 			self.localized = True
 			self.music_pub.publish(True)
+			self.absolute_obstacle_flag = False
+			print('Localized')
 
 	def initial_callback(self, data):
 		if not self.pos_actual:
